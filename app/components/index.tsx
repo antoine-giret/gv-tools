@@ -1,4 +1,5 @@
 import { Button } from './button';
+import { IconButton } from './icon-button';
 import { Input } from './input';
 
-export { Button, Input };
+export { Button, IconButton, Input };
