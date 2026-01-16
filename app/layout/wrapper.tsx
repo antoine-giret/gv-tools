@@ -45,9 +45,7 @@ export async function Wrapper({
       <Providers user={user}>
         <div className="min-h-screen flex flex-col">
           <Header />
-          <div className="flex flex-col grow p-6">
-            {children}
-          </div>
+          {children}
           <Footer />
         </div>
       </Providers>
