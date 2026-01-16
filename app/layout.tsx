@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Nunito_Sans, Titan_One } from "next/font/google";
+import { Suspense } from 'react';
+
 import "./globals.css";
+
+import { Wrapper } from './layout/wrapper';
+import Loading from './loading';
+
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-nunito-sans",
@@ -13,8 +19,8 @@ const titanOne = Titan_One({
 });
 
 export const metadata: Metadata = {
-  title: "Geovelo tools",
-  description: "Tools for Geovelo app",
+  title: "Mon activité vélo",
+  description: "Plateforme permettant de visualiser votre activité vélo à partir des données Geovelo",
 };
 
 export default function RootLayout({
@@ -23,11 +29,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${nunitoSans.variable} ${titanOne.variable} antialiased`}
       >
-        {children}
+        <Suspense fallback={<Loading />}>
+          <Wrapper>{children}</Wrapper>
+        </Suspense>
       </body>
     </html>
   );
