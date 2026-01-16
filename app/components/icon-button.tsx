@@ -13,8 +13,8 @@ export function IconButton(
   } & ({ href: string } | { onClick: () => void })
 ) {
   const className =
-    `rounded-full flex items-center justify-center h-9 w-9 ${disabled ? `bg-gray-800 text-gray-600 pointer-events-none` : `hover:bg-black/10 hover:dark:bg-white/10 outline-white focus:outline outline-offset-2`} cursor-pointer`;
-  const iconClassName = `size-4 ${disabled ? 'text-gray-600' : 'text-black dark:text-white'}`;
+    `rounded-full flex items-center justify-center h-9 w-9 ${disabled ? `text-gray-600 pointer-events-none` : `hover:bg-black/10 hover:dark:bg-white/10 focus:bg-black/20 focus:dark:bg-white/20`} cursor-pointer`;
+  const iconClassName = `size-4 ${disabled ? 'text-gray-400 dark:text-gray-600' : 'text-black dark:text-white'}`;
   const ariaProps = { 'aria-label': label, title: label };
 
   if ('href' in props) {
