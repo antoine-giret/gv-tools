@@ -1,24 +1,33 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { ChevronLeftIcon } from '@heroicons/react/24/solid'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { saveAs } from 'file-saver';
 import html2canvas from 'html2canvas-pro';
 import Image from 'next/image';
 
-import { Button, Input } from './components';
+import { Button, Input, Select } from './components';
 import SummaryPage1 from './summary-pages/page-1';
 import SummaryPage2 from './summary-pages/page-2';
 import SummaryPage3 from './summary-pages/page-3';
 import { months, TStat, TValues, weekDays } from './summary-pages/types';
 
-const year = 2025;
+const firstYear = 2020;
+const currentYear = new Date().getFullYear();
+const years = new Array(currentYear - firstYear + 1)
+  .fill(null)
+  .map((_, index) => ({ value: firstYear + index, label: `${firstYear + index}` }))
 
 export default function Home() {
+  const [year, setYear] = useState(
+    years[new Date().getMonth() < 11 ? years.length - 2 : years.length - 1].value
+  );
   const [authorizationToken, setAuthorizationToken] = useState('');
   const [userId, setUserId] = useState('');
   const [values, setValues] = useState<TValues>();
   const [images, setImages] = useState<Array<{ blob: Blob; previewURL: string }>>();
   const [loading, setLoading] = useState(false);
+  const title = useMemo(() => `Mon année à vélo ${year}`, [year]);
   const summaryPage1Ref = useRef<HTMLDivElement>(null);
   const summaryPage2Ref = useRef<HTMLDivElement>(null);
   const summaryPage3Ref = useRef<HTMLDivElement>(null);
@@ -65,7 +74,7 @@ export default function Home() {
 
     try {
       const res = await fetch(
-        `https://backend.geovelo.fr/api/v2/users/${userId}/stats_traces?period=custom&date_start=01-01-${year}&date_end=31-12-${year}&unit=day`,
+        `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v2/users/${userId}/stats_traces?period=custom&date_start=01-01-${year}&date_end=31-12-${year}&unit=day`,
         {
           method: 'GET',
           headers: {
@@ -167,11 +176,19 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen relative flex flex-col items-center justify-center p-6 gap-6 overflow-hidden">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 gap-6 overflow-hidden">
       {loading ? (
         <span className="font-medium text-white">Chargement des données</span>
       ) : images && images.length > 0 ? (
         <div className="w-150 max-w-full flex flex-col gap-6">
+          <div className="flex">
+            <Button
+              Icon={ChevronLeftIcon}
+              label="Retour"
+              onClick={() => setImages(undefined)}
+              variant="text"
+            />
+          </div>
           <div className="grid grid-cols-3 gap-6">
             {images.map(({ previewURL }, index) => (
               <div className="relative aspect-[calc(1012/1350)]" key={index}>
@@ -179,44 +196,52 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <Button label="Télécharger" onClick={download} />
+          <div className="flex justify-end">
+            <Button label="Télécharger" onClick={download} />
+          </div>
         </div>
       ) : (
         <>
           <form
-            className="w-150 max-w-full grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-x-6 gap-y-3"
+            className="flex flex-col gap-6 w-150 max-w-full"
             onSubmit={(event) => fetchStats(event)}
           >
-            <div>
-              <Input
-                id="user-id"
-                label="ID utilisateur"
-                onChange={setUserId}
-                placeholder="42"
-                required
-                type="number"
-                value={userId}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-3">
+              <div>
+                <Select id="year" label="Année" onChange={setYear} options={years} value={year} />
+              </div>
+              <div className="sm:col-span-2 md:col-span-3" />
+              <div>
+                <Input
+                  id="user-id"
+                  label="ID utilisateur"
+                  onChange={setUserId}
+                  placeholder="42"
+                  required
+                  type="number"
+                  value={userId}
+                />
+              </div>
+              <div className="sm:col-span-2 md:col-span-3">
+                <Input
+                  required
+                  id="authorization-token"
+                  label="Token"
+                  onChange={setAuthorizationToken}
+                  placeholder="XXX"
+                  value={authorizationToken}
+                />
+              </div>
             </div>
-            <div className="sm:col-span-2 md:col-span-3">
-              <Input
-                required
-                id="authorization-token"
-                label="Token"
-                onChange={setAuthorizationToken}
-                placeholder="XXX"
-                value={authorizationToken}
-              />
-            </div>
-            <div className="flex items-end sm:col-span-3 md:col-span-1">
+            <div className="flex justify-end">
               <Button label="Valider" type="submit" />
             </div>
           </form>
         </>
       )}
-      <SummaryPage1 ref={summaryPage1Ref} values={values} />
-      <SummaryPage2 ref={summaryPage2Ref} values={values} />
-      <SummaryPage3 ref={summaryPage3Ref} values={values} year={year} />
-    </main>
+      <SummaryPage1 ref={summaryPage1Ref} title={title} values={values} />
+      <SummaryPage2 ref={summaryPage2Ref} title={title} values={values} />
+      <SummaryPage3 ref={summaryPage3Ref} title={title} values={values} year={year} />
+    </div>
   );
 }

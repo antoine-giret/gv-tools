@@ -15,7 +15,7 @@ export function Button(
   } & ({ href: string } | { onClick: () => void } | { type: 'submit' })
 ) {
   const className =
-    `rounded-md flex items-center justify-center gap-3 px-6 h-9 ${disabled ? `${variant === 'text' ? '' : 'bg-gray-800'} text-gray-600 pointer-events-none` : `${variant === 'text' ? 'hover:bg-black/10 hover:dark:bg-white/10 outline-white' : 'bg-emerald-500 hover:bg-emerald-400 outline-emerald-400'} focus:outline outline-offset-2 text-white`} font-small font-bold cursor-pointer`;
+    `rounded-md flex items-center justify-center gap-3 px-6 h-9 ${disabled ? `${variant === 'text' ? '' : 'bg-gray-800'} text-gray-600 pointer-events-none` : `${variant === 'text' ? 'hover:bg-black/10 hover:dark:bg-white/10 focus:bg-black/20 focus:dark:bg-white/20' : 'bg-emerald-500 hover:bg-emerald-600 hover:dark:bg-emerald-400'} text-white`} font-small font-bold cursor-pointer`;
   const iconClassName = `size-4 ${disabled ? 'text-gray-600' : 'text-white'}`;
 
   if ('href' in props) {

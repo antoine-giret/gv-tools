@@ -29,7 +29,7 @@ export function Input(
       </label>
       <input
         autoComplete="nope"
-        className="block w-full rounded-md px-3 h-9 bg-gray-800 focus:outline outline-emerald-400 outline-offset-2 text-heading text-sm placeholder:text-body"
+        className="block w-full rounded-md px-3 h-9 bg-black/10 dark:bg-white/10 focus:outline outline-emerald-400 outline-offset-2 text-heading text-sm placeholder:text-body"
         data-lpignore="true"
         data-form-type="other"
         disabled={disabled}
