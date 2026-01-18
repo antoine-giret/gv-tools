@@ -2,14 +2,16 @@ export const periodTypes = ['week', 'month', 'year'] as const;
 
 export type TPeriodType = (typeof periodTypes)[number];
 
-export function getInitialPeriod(periodType: TPeriodType) {
+export type TPeriod = { startDate: Date; endDate: Date };
+
+export function getInitialPeriod(periodType: TPeriodType): TPeriod {
   const startDate = new Date();
   const endDate = new Date();
 
   switch (periodType) {
     case 'week':
       const day = startDate.getDay();
-      
+
       startDate.setDate(startDate.getDate() - day + (day == 0 ? -6 : 1));
       endDate.setDate(endDate.getDate() - day + (day == 0 ? 0 : 7));
 

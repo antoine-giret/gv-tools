@@ -7,10 +7,10 @@ import html2canvas from 'html2canvas-pro';
 import Image from 'next/image';
 
 import { Button, Input, Select } from './components';
+import { months, TStat, TValues, weekDays } from './dashboard/stats/types';
 import SummaryPage1 from './summary-pages/page-1';
 import SummaryPage2 from './summary-pages/page-2';
 import SummaryPage3 from './summary-pages/page-3';
-import { months, TStat, TValues, weekDays } from './summary-pages/types';
 
 const firstYear = 2020;
 const currentYear = new Date().getFullYear();

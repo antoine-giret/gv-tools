@@ -1,7 +1,8 @@
 import { Ref, useMemo } from 'react';
 
+import { statsMap, TValues, weekDays } from '../dashboard/stats/types';
+
 import SummaryPageContainer from './container';
-import { statsMap, TValues, weekDays } from './types';
 
 const {
   activeDays: {

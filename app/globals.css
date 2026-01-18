@@ -36,3 +36,7 @@ select:not([size]) {
   background-repeat: no-repeat;
   background-size: .75em .75em;
 }
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}

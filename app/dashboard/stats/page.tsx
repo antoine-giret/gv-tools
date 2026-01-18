@@ -1,19 +1,137 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { PeriodSelector } from '../../components';
+import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
+import { TUser } from '../../models/user';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
+
+import { GlobalStats } from './global-stats';
+import { months, TStat, TValues, weekDays } from './types';
 
 export default function StatsPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
   const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
+  const [values, setValues] = useState<TValues>();
+  const { signedInUser } = useContext(UserContext);
+
+  useEffect(() => {
+    let active = true;
+
+    async function fetchStats({ id: userId, authorizationToken }: TUser) {
+      const { startDate, endDate } = period;
+      const startDateFormatted = startDate.toISOString().split('T')[0].split('-').reverse().join('-');
+      const endDateFormatted = endDate.toISOString().split('T')[0].split('-').reverse().join('-');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v2/users/${userId}/stats_traces?period=custom&date_start=${startDateFormatted}&date_end=${endDateFormatted}&unit=day`,
+        {
+          method: 'GET',
+          headers: {
+            'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
+            source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
+            Authorization: `Token ${authorizationToken}`,
+          },
+        },
+      );
+
+      const {
+        count: journeys,
+        distance,
+        duration,
+        data,
+      }: {
+        count: number;
+        data: Array<{ count: number; distance: number; duration: number; unit: number }>;
+        distance: number;
+        duration: number;
+      } = await res.json();
+
+      const daysMap = data.reduce<{ [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number } }>((
+        res,
+        { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration },
+      ) => {
+        res[unit] = {
+          journeys: dataJourneys,
+          distance: dataDistance,
+          duration: dataDuration,
+        }
+        return res;
+      }, {});
+
+      let activeDays = 0;
+      let activeDaysInARow = 0;
+      let maxActiveDaysInARow = 0;
+      let maxActiveDaysInARowStartIndex = 0;
+      const distancesByMonth: { [key: number]: number } = {};
+      const distancesByDays: { [key: number]: number } = {};
+      const distancesByWeekDays: { [key: number]: number } = {};
+      const msInOneDay = 1000 * 60 * 60 * 24;
+      const currentDay = new Date(startDate);
+
+      let daysCount = 0;
+      while (currentDay.getTime() < endDate.getTime()) {
+        const key = currentDay.toISOString().replace(/T.*/, '');
+        const dayDiff =
+          (currentDay.getTime() - startDate.getTime() - 24 * 60 * 60 * 1000) +
+          ((startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000);
+        const day = Math.floor(dayDiff / msInOneDay) - 1;
+
+        if (daysMap[key] && daysMap[key].journeys) {
+          const month = currentDay.getMonth();
+          const weekDay = currentDay.getDay();
+          const { distance } = daysMap[key];
+
+          ++activeDays;
+          ++activeDaysInARow;
+
+          if (!distancesByMonth[month]) distancesByMonth[month] = distance;
+          else distancesByMonth[month] += distance;
+
+          distancesByDays[day - 1] = distance;
+
+          if (!distancesByWeekDays[weekDay]) distancesByWeekDays[weekDay] = distance;
+          else distancesByWeekDays[weekDay] += distance;
+        } else activeDaysInARow = 0;
+
+        if (activeDaysInARow > maxActiveDaysInARow) {
+          maxActiveDaysInARow = activeDaysInARow;
+          maxActiveDaysInARowStartIndex = day - activeDaysInARow;
+        }
+
+        currentDay.setDate(currentDay.getDate() + 1);
+        ++daysCount;
+      }
+
+      if (active) {
+        setValues({
+          journeys,
+          distance,
+          duration,
+          activeDays,
+          maxActiveDaysInARow,
+          maxActiveDaysInARowStartIndex,
+          distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
+          distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
+          distancesByWeekDays: weekDays.map(({ key }) => distancesByWeekDays[key] || 0),
+        });
+      }
+    }
+
+    if (signedInUser) fetchStats(signedInUser);
+
+    return () => {
+      active = false;
+      setValues(undefined);
+    };
+  }, [signedInUser, period]);
 
   return (
     <PrivatePage>
       <div className="flex flex-col gap-6">
         <PeriodSelector period={period} setPeriod={setPeriod} />
+        <GlobalStats values={values} />
       </div>
     </PrivatePage>
   );

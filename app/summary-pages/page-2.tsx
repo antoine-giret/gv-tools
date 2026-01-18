@@ -1,7 +1,9 @@
 import { Fragment, Ref, useMemo } from 'react';
 
+import { months, monthsMap, statsMap, TMonth, TValues } from '../dashboard/stats/types';
+import { formatNumber } from '../utils/stats';
+
 import SummaryPageContainer from './container';
-import { formatNumber, months, monthsMap, statsMap, TMonth, TValues } from './types';
 
 const {
   distance: {

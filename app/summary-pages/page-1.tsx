@@ -1,7 +1,8 @@
 import { Ref } from 'react';
 
+import { stats, statsMap, TValues } from '../dashboard/stats/types';
+
 import SummaryPageContainer from './container';
-import { stats, statsMap, TValues } from './types';
 
 export default function SummaryPage1(
   { ref, values }: { ref: Ref<HTMLDivElement>, values: TValues | undefined },

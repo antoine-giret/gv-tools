@@ -1,17 +1,11 @@
 import { JSX, SVGProps } from 'react';
 
-import { ActiveDaysIcon, DistanceIcon, DurationIcon, JourneysIcon } from '../icons';
+import { ActiveDaysIcon, DistanceIcon, DurationIcon, JourneysIcon } from '../../components/icons';
+import { formatNumber } from '../../utils/stats';
 
 export const stats = ['distance', 'activeDays', 'journeys', 'duration'] as const;
 
 export type TStat = (typeof stats)[number];
-
-export function formatNumber(value: number): string {
-  return (value || 0)
-    .toString()
-    .replace(/\./, ',')
-    .replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
-}
 
 export const statsMap: {
   [key in TStat]: {
