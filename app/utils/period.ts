@@ -2,7 +2,7 @@ export const periodTypes = ['week', 'month', 'year'] as const;
 
 export type TPeriodType = (typeof periodTypes)[number];
 
-export type TPeriod = { startDate: Date; endDate: Date };
+export type TPeriod = { endDate: Date; startDate: Date; type: TPeriodType };
 
 export function getInitialPeriod(periodType: TPeriodType): TPeriod {
   const startDate = new Date();
@@ -34,5 +34,5 @@ export function getInitialPeriod(periodType: TPeriodType): TPeriod {
   startDate.setHours(0, 0, 0, 0);
   endDate.setHours(23, 59, 59, 999);
 
-  return { startDate, endDate };
+  return { type: periodType, startDate, endDate };
 }

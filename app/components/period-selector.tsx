@@ -64,7 +64,7 @@ export function PeriodSelector(
 
     if (startDate.getTime() < new Date(2020, 0, 1, 0, 0, 0, 0).getTime()) return null;
 
-    return { startDate, endDate };
+    return { type: periodType, startDate, endDate };
   }, [periodType, period]);
 
   function displayPrevPeriod() {
@@ -96,7 +96,7 @@ export function PeriodSelector(
         break;
     }
 
-    setPeriod({ startDate, endDate });
+    setPeriod({ type: periodType, startDate, endDate });
   }
 
   const { startDate, endDate } = period;

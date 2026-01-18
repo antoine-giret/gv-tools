@@ -77,7 +77,7 @@ export default function DashboardLayout({
         })}
         <div className="shrink-0 w-[1000px]" />
       </div>
-      <div className="grow flex flex-col p-6">
+      <div className="grow flex flex-col p-6 overflow-x-hidden">
         {children}
       </div>
     </div>

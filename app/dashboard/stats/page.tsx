@@ -8,6 +8,7 @@ import PrivatePage from '../../guards/private';
 import { TUser } from '../../models/user';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
 
+import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
 import { months, TStat, TValues, weekDays } from './types';
 
@@ -132,6 +133,7 @@ export default function StatsPage() {
       <div className="flex flex-col gap-6">
         <PeriodSelector period={period} setPeriod={setPeriod} />
         <GlobalStats values={values} />
+        <Distance period={period} values={values} />
       </div>
     </PrivatePage>
   );
