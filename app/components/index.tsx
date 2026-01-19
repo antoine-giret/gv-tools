@@ -4,5 +4,6 @@ import { Input } from './input';
 import { PeriodSelector } from './period-selector';
 import { Select } from './select';
 import { Skeleton } from './skeleton';
+import { Tooltip } from './tooltip';
 
-export { Button, IconButton, Input, PeriodSelector, Select, Skeleton };
+export { Button, IconButton, Input, PeriodSelector, Select, Skeleton, Tooltip };

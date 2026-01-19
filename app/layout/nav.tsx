@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useCookies } from 'next-client-cookies';
 import { useContext } from 'react';
 
-import { IconButton } from '../components';
+import { IconButton, Tooltip } from '../components';
 import { UserContext } from '../context';
 
 export function Nav() {
@@ -38,7 +38,9 @@ export function Nav() {
             )}
             <span className="text-md">{signedInUser.username}</span>
           </div>
-          <IconButton Icon={ArrowRightStartOnRectangleIcon} label="Se déconnecter" onClick={logout} />
+          <Tooltip label="Se déconnecter" position="bottom-left">
+            <IconButton Icon={ArrowRightStartOnRectangleIcon} label="Se déconnecter" onClick={logout} />
+          </Tooltip>
         </>
       )}
     </div>
