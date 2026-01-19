@@ -25,7 +25,7 @@ export const statsMap: {
     Icon: DistanceIcon,
     label: 'parcourus',
     unit: 'kms',
-    format: (value) => `${formatNumber(Math.round(value / 1000))}`,
+    format: (value) => `${value > 100_000 ? formatNumber(Math.round(value / 1000)): formatNumber(Math.round(value / 100) / 10)}`,
   },
   duration: {
     Icon: DurationIcon,

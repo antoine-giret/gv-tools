@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 
 import { Skeleton, Tooltip } from '../../components';
-import { formatNumber } from '../../utils/stats';
 
-import { TValues, weekDays, weekDaysMap } from './types';
+import { statsMap, TValues, weekDays, weekDaysMap } from './types';
+
+const { format: formatDistance } = statsMap.distance;
 
 export function Days({ values }: { values: TValues | undefined }) {
   const bestWeekDayIndex = useMemo(
@@ -51,7 +52,7 @@ export function Days({ values }: { values: TValues | undefined }) {
               <div className="w-full max-w-12 aspect-square flex items-center justify-center">
                 {percentage !== undefined ? (
                   <Tooltip
-                    label={value !== undefined ? `${formatNumber(Math.round(value / 100) / 10)} kms` : ''}
+                    label={value !== undefined ? `${formatDistance(value)} kms` : ''}
                     position="bottom"
                     style={{ height: `${percentage}%`, width: `${percentage}%` }}
                   >

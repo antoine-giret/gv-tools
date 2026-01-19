@@ -3,11 +3,12 @@ import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 
 import { TPeriod } from '../../utils/period';
-import { formatNumber } from '../../utils/stats';
 
-import { TValues } from './types';
+import { statsMap, TValues } from './types';
 
 Chart.register(LinearScale, CategoryScale, BarController, BarElement, Tooltip);
+
+const { format: formatDistance } = statsMap.distance;
 
 const chartId = 'distance-chart';
 
@@ -91,7 +92,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
               ticks: {
                 stepSize: 10000,
                 maxTicksLimit: 5,
-                callback: (value) => typeof value === 'number' ? `${formatNumber(Math.round(value / 1000))} kms` : '',
+                callback: (value) => typeof value === 'number' ? `${formatDistance(value)} kms` : '',
               },
             },
           },
@@ -100,7 +101,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
               enabled: true,
               callbacks: {
                 title: ([{ dataIndex }]) => tooltipLabels[dataIndex],
-                label: ({ parsed: { y } }) => ` ${y ? formatNumber(Math.round(y / 100) / 10) : 0} kms`,
+                label: ({ parsed: { y } }) => ` ${y ? formatDistance(y) : 0} kms`,
               },
             },
           },
