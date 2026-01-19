@@ -1,3 +1,5 @@
+import { Skeleton } from '../../components';
+
 import { stats, statsMap, TValues } from './types';
 
 export function GlobalStats({ values }: { values: TValues | undefined }) {
@@ -17,9 +19,7 @@ export function GlobalStats({ values }: { values: TValues | undefined }) {
               {value !== undefined ? (
                 <span className="text-lg font-bold text-center">{format(value)}</span>
               ) : (
-                <div className="animate-pulse flex items-center justify-center h-7 w-full">
-                  <div className="h-4 w-[50%] bg-black/30 dark:bg-white/30 rounded-full" />
-                </div>
+                <Skeleton />
               )}
               <span className="text-sm text-center text-black/70 dark:text-white/70">
                 {unit}&nbsp;{label}
