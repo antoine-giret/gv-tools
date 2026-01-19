@@ -1,9 +1,26 @@
 import { Fragment, Ref, useMemo } from 'react';
 
-import { months, monthsMap, statsMap, TMonth, TValues } from '../dashboard/stats/types';
+import { months, statsMap, TValues } from '../dashboard/stats/types';
 import { formatNumber } from '../utils/stats';
 
 import SummaryPageContainer from './container';
+
+export type TMonth = (typeof months)[number];
+
+export const monthsMap: { [key in TMonth]: { label: string } } = {
+  0: { label: 'janvier' },
+  1: { label: 'février' },
+  2: { label: 'mars' },
+  3: { label: 'avril' },
+  4: { label: 'mai' },
+  5: { label: 'juin' },
+  6: { label: 'juillet' },
+  7: { label: 'août' },
+  8: { label: 'septembre' },
+  9: { label: 'octobre' },
+  10: { label: 'novembre' },
+  11: { label: 'décembre' },
+}
 
 const {
   distance: {

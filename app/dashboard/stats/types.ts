@@ -43,24 +43,29 @@ export const statsMap: {
 
 export const months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
 
-export type TMonth = (typeof months)[number];
+export const weekDays = [1, 2, 3, 4, 5, 6, 0] as const;
 
-export const monthsMap: { [key in TMonth]: { label: string } } = {
-  0: { label: 'janvier' },
-  1: { label: 'février' },
-  2: { label: 'mars' },
-  3: { label: 'avril' },
-  4: { label: 'mai' },
-  5: { label: 'juin' },
-  6: { label: 'juillet' },
-  7: { label: 'août' },
-  8: { label: 'septembre' },
-  9: { label: 'octobre' },
-  10: { label: 'novembre' },
-  11: { label: 'décembre' },
+type TWeekDay = (typeof weekDays) [number];
+
+const firstWeekDate = new Date();
+const weekDay = firstWeekDate.getDay();
+firstWeekDate.setDate(firstWeekDate.getDate() - weekDay + (weekDay == 0 ? -7 : 0));
+const weekDaysLabels = weekDays.map(() => {
+  firstWeekDate.setDate(firstWeekDate.getDate() + 1);
+  return new Intl.DateTimeFormat('fr', { weekday: 'short' }).format(firstWeekDate);
+});
+
+export const weekDaysMap: { [key in TWeekDay]: { label: string } } = {
+  0: { label: weekDaysLabels[6] },
+  1: { label: weekDaysLabels[0] },
+  2: { label: weekDaysLabels[1] },
+  3: { label: weekDaysLabels[2] },
+  4: { label: weekDaysLabels[3] },
+  5: { label: weekDaysLabels[4] },
+  6: { label: weekDaysLabels[5] },
 }
 
-export const weekDays = [
+export const _weekDays = [
   { key: 1, shortLabel: 'L', label: 'lun.' },
   { key: 2, shortLabel: 'M', label: 'mar.' },
   { key: 3, shortLabel: 'M', label: 'mer.' },

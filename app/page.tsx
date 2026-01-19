@@ -7,7 +7,7 @@ import html2canvas from 'html2canvas-pro';
 import Image from 'next/image';
 
 import { Button, Input, Select } from './components';
-import { months, TStat, TValues, weekDays } from './dashboard/stats/types';
+import { months, TStat, TValues, _weekDays } from './dashboard/stats/types';
 import SummaryPage1 from './summary-pages/page-1';
 import SummaryPage2 from './summary-pages/page-2';
 import SummaryPage3 from './summary-pages/page-3';
@@ -163,7 +163,7 @@ export default function Home() {
           new Array(((year % 4 === 0 && year % 100 > 0) || year % 400 == 0) ? 366 : 365)
             .fill(null)
             .map((_, index) => distancesByDays[index] || 0),
-        distancesByWeekDays: weekDays.map(({ key }) => distancesByWeekDays[key] || 0),
+        distancesByWeekDays: _weekDays.map(({ key }) => distancesByWeekDays[key] || 0),
       });
     } catch (err) {
       console.error(err);

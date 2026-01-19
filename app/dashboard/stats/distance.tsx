@@ -71,6 +71,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
           }],
         },
         options: {
+          responsive: true,
           maintainAspectRatio: false,
           scales: {
             x: {
@@ -133,7 +134,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
   }, [values]);
 
   return (
-    <div className="w-full h-80">
+    <div className="h-80">
       <canvas className="w-full h-full" id={chartId} />
     </div>
   );

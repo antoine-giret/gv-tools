@@ -1,6 +1,6 @@
 import { Ref, useMemo } from 'react';
 
-import { statsMap, TValues, weekDays } from '../dashboard/stats/types';
+import { statsMap, TValues, _weekDays } from '../dashboard/stats/types';
 
 import SummaryPageContainer from './container';
 
@@ -19,7 +19,7 @@ export default function SummaryPage3(
   const headers = useMemo(() => {
     return new Array(28)
       .fill(null)
-      .map((_, index) => ({ key: index, label: weekDays[index % 7].shortLabel }))
+      .map((_, index) => ({ key: index, label: _weekDays[index % 7].shortLabel }))
   }, []);
   const days = useMemo(() => {
     return new Array(((year % 4 === 0 && year % 100 > 0) || year % 400 == 0) ? 366 : 365)
@@ -99,7 +99,7 @@ export default function SummaryPage3(
             })}
           </div>
           <div className="w-full grid grid-cols-7 gap-[50px]">
-            {weekDays.map(({ key, label }) => {
+            {_weekDays.map(({ key, label }) => {
               const isBestWeekDay = key === bestWeekDayIndex;
               const percentage = (values.distancesByWeekDays[key] / bestWeekDayDistance) * 100;
 

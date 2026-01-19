@@ -8,6 +8,7 @@ import PrivatePage from '../../guards/private';
 import { TUser } from '../../models/user';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
 
+import { Days } from './days';
 import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
 import { months, TStat, TValues, weekDays } from './types';
@@ -115,7 +116,7 @@ export default function StatsPage() {
           maxActiveDaysInARowStartIndex,
           distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
           distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
-          distancesByWeekDays: weekDays.map(({ key }) => distancesByWeekDays[key] || 0),
+          distancesByWeekDays: weekDays.map((index) => distancesByWeekDays[index] || 0),
         });
       }
     }
@@ -130,10 +131,16 @@ export default function StatsPage() {
 
   return (
     <PrivatePage>
-      <div className="flex flex-col gap-6">
-        <PeriodSelector period={period} setPeriod={setPeriod} />
+      <div className="flex flex-col items-stretch gap-12">
+        <div className="flex flex-col gap-6">
+          <h1 className="text-lg font-bold">Mes statistiques</h1>
+          <PeriodSelector period={period} setPeriod={setPeriod} />
+        </div>
         <GlobalStats values={values} />
         <Distance period={period} values={values} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-6">
+          <Days values={values} />
+        </div>
       </div>
     </PrivatePage>
   );

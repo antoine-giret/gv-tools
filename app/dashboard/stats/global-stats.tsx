@@ -19,7 +19,7 @@ export function GlobalStats({ values }: { values: TValues | undefined }) {
               {value !== undefined ? (
                 <span className="text-lg font-bold text-center">{format(value)}</span>
               ) : (
-                <Skeleton />
+                <Skeleton variant="text" width="w-[50%]" />
               )}
               <span className="text-sm text-center text-black/70 dark:text-white/70">
                 {unit}&nbsp;{label}
