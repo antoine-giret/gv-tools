@@ -1,6 +1,6 @@
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from 'chart.js';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { TPeriod } from '../../utils/period';
 
@@ -10,9 +10,8 @@ Chart.register(LinearScale, CategoryScale, BarController, BarElement, Tooltip);
 
 const { format: formatDistance } = statsMap.distance;
 
-const chartId = 'distance-chart';
-
-export function Distance({ period, values }: { period: TPeriod; values: TValues | undefined }) {
+export function Distance({ download, period, values }: { download?: boolean; period: TPeriod; values: TValues | undefined }) {
+  const chartId = useMemo(() => download ? 'distance-chart' : 'exported-distance-chart', [download]);
   const chartRef = useRef<Chart>(null);
   const { theme } = useTheme();
 
@@ -78,20 +77,22 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
           maintainAspectRatio: false,
           scales: {
             x: {
-              ticks: {
-                maxRotation: 0,
-              },
               grid: {
                 display: false,
+              },
+              ticks: {
+                color: download ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                maxRotation: 0,
               },
             },
             y: {
               suggestedMax: 0,
               beginAtZero: true,
               grid: {
-                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                color: download || theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
               },
               ticks: {
+                color: download ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
                 stepSize: 10000,
                 maxTicksLimit: 5,
                 callback: (value) => typeof value === 'number' ? `${formatDistance(value)} kms` : '',
@@ -100,7 +101,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
           },
           plugins: {
             tooltip: {
-              enabled: true,
+              enabled: !download,
               callbacks: {
                 title: ([{ dataIndex }]) => tooltipLabels[dataIndex],
                 label: ({ parsed: { y } }) => ` ${y ? formatDistance(y) : 0} kms`,
@@ -141,7 +142,7 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
   }, [values]);
 
   return (
-    <div className="h-80">
+    <div className={download ? 'h-120' : 'h-80'}>
       <canvas className="w-full h-full" id={chartId} />
     </div>
   );

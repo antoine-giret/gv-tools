@@ -67,16 +67,6 @@ export const weekDaysMap: { [key: number]: { firstLetter: string; label: string;
   6: { ...weekDaysLabels[5] },
 };
 
-export const _weekDays = [
-  { key: 1, shortLabel: 'L', label: 'lun.' },
-  { key: 2, shortLabel: 'M', label: 'mar.' },
-  { key: 3, shortLabel: 'M', label: 'mer.' },
-  { key: 4, shortLabel: 'J', label: 'jeu.' },
-  { key: 5, shortLabel: 'V', label: 'ven.' },
-  { key: 6, shortLabel: 'S', label: 'sam.' },
-  { key: 0, shortLabel: 'D', label: 'dim.' },
-];
-
 export type TValues =
   { [key in TStat | 'maxActiveDaysInARow' | 'maxActiveDaysInARowStartIndex']: number } &
   { distancesByMonth: number[]; distancesByDays: number[]; distancesByWeekDays: { [key: number]: number } };

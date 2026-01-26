@@ -1,8 +1,9 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
+import { useContext, useEffect, useRef, useState } from 'react';
 
-import { PeriodSelector } from '../../components';
+import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
 import { TUser } from '../../models/user';
@@ -11,6 +12,7 @@ import { getInitialPeriod, TPeriodType } from '../../utils/period';
 import { Days } from './days';
 import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
+import { StatsExport, TStatsExportRef } from './image-export';
 import { months, TStat, TValues } from './types';
 import { Calendar } from './calendar';
 
@@ -18,7 +20,9 @@ export default function StatsPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
   const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
   const [values, setValues] = useState<TValues>();
+  const [downloading, setDownloading] = useState(false);
   const { signedInUser } = useContext(UserContext);
+  const statsExportRef = useRef<TStatsExportRef>(null);
 
   useEffect(() => {
     let active = true;
@@ -130,12 +134,36 @@ export default function StatsPage() {
     };
   }, [signedInUser, period]);
 
+  async function download() {
+    setDownloading(true);
+
+    try {
+      await statsExportRef.current?.download();
+    } catch (err) {
+      console.error(err);
+    }
+
+    setDownloading(false);
+  }
+
   return (
     <PrivatePage>
       <div className="flex flex-col items-stretch gap-12">
         <div className="flex flex-col gap-6">
           <h1 className="text-lg font-bold">Mes statistiques</h1>
-          <PeriodSelector period={period} setPeriod={setPeriod} />
+          <div
+            className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-6 items-stretch sm:items-center md:items-stretch lg:items-center justify-between"
+          >
+            <PeriodSelector period={period} setPeriod={setPeriod} />
+            <div className="flex justify-end">
+              <Button
+                disabled={!values || downloading}
+                Icon={ArrowDownTrayIcon}
+                label="Télécharger"
+                onClick={download}
+              />
+            </div>
+          </div>
         </div>
         <GlobalStats values={values} />
         <Distance period={period} values={values} />
@@ -146,6 +174,7 @@ export default function StatsPage() {
           </div>
         )}
       </div>
+      <StatsExport period={period} ref={statsExportRef} values={values} />
     </PrivatePage>
   );
 }

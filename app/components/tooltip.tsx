@@ -8,7 +8,7 @@ export function Tooltip(
     children,
   }: {
     children: React.ReactNode;
-    label: string;
+    label: React.ReactNode;
     position: 'bottom' | 'bottom-left';
     style?: CSSProperties;
   }

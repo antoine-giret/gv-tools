@@ -9,9 +9,11 @@ import { statsMap, TValues, weekDaysMap } from './types';
 const { distance: { format: formatDistance } } = statsMap;
 
 export function Calendar({
+  download,
   period,
   values,
 }: {
+  download?: boolean;
   period: TPeriod;
   values: TValues | undefined;
 }) {
@@ -48,7 +50,7 @@ export function Calendar({
       <div className="w-full grid grid-cols-28 gap-1">
         {headers.map(({ key, label }) => (
           <div className="flex justify-center" key={key}>
-            <span className="text-xs text-black dark:text-white">{label}</span>
+            <span className={`text-xs ${download ? 'text-white' : 'text-black dark:text-white'}`}>{label}</span>
           </div>
         ))}
         {fakeDays.map((_, index) => <div key={index} />)}
@@ -66,41 +68,43 @@ export function Calendar({
           return (
             <Tooltip
               key={index}
-              label={<>{day}{active && <><br />{formatDistance(distance)} kms</>}</>}
+              label={download ? '' : <>{day}{active && <><br />{formatDistance(distance)} kms</>}</>}
               position="bottom"
             >
               <div
-                className={`aspect-square rounded-sm ${active ? (isInMaxActiveDaysInARow ? 'bg-emerald-300' : 'bg-black/30 dark:bg-white/70') : 'border-1 border-black/30 dark:border-white/50'}`}
+                className={`aspect-square rounded-sm ${active ? (isInMaxActiveDaysInARow ? 'bg-emerald-300' : `${download ? 'bg-white' : 'bg-black/30 dark:bg-white/70'}`) : `border-1 ${download ? 'border-white' : 'border-black/30 dark:border-white/50'}`}`}
               />
             </Tooltip>
           );
         })}
       </div>
-      <div className="w-full flex flex-col gap-1">
-        <div className="flex items-center gap-3">
-          <div style={{ width: 'calc((100% - 27 * 4px) / 28)' }}>
-            <div
-              className="aspect-square rounded-sm"
-              style={{
-                background: theme === 'light' ?
-                  'linear-gradient(to top left, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3) 50%, var(--color-emerald-300) 50%, var(--color-emerald-300) 100%)' :
-                  'linear-gradient(to top left, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 50%, var(--color-emerald-300) 50%, var(--color-emerald-300) 100%)',
-              }}
-            />
+      {!download && (
+        <div className="w-full flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <div style={{ width: 'calc((100% - 27 * 4px) / 28)' }}>
+              <div
+                className="aspect-square rounded-sm"
+                style={{
+                  background: theme === 'light' ?
+                    'linear-gradient(to top left, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3) 50%, var(--color-emerald-300) 50%, var(--color-emerald-300) 100%)' :
+                    'linear-gradient(to top left, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 50%, var(--color-emerald-300) 50%, var(--color-emerald-300) 100%)',
+                }}
+              />
+            </div>
+            <span className="text-sm text-black dark:text-white">
+              Jour avec activité
+            </span>
           </div>
-          <span className="text-sm text-black dark:text-white">
-            Jour avec activité
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div style={{ width: 'calc((100% - 27 * 4px) / 28)' }}>
-            <div className="aspect-square rounded-sm border-1 border-black/30 dark:border-white/50" />
+          <div className="flex items-center gap-3">
+            <div style={{ width: 'calc((100% - 27 * 4px) / 28)' }}>
+              <div className="aspect-square rounded-sm border-1 border-black/30 dark:border-white/50" />
+            </div>
+            <span className="text-black dark:text-white">
+              Jour sans activité
+            </span>
           </div>
-          <span className="text-black dark:text-white">
-            Jour sans activité
-          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }
