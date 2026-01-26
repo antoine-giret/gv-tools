@@ -11,7 +11,8 @@ import { getInitialPeriod, TPeriodType } from '../../utils/period';
 import { Days } from './days';
 import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
-import { months, TStat, TValues, weekDays } from './types';
+import { months, TStat, TValues } from './types';
+import { Calendar } from './calendar';
 
 export default function StatsPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
@@ -139,7 +140,8 @@ export default function StatsPage() {
         <GlobalStats values={values} />
         <Distance period={period} values={values} />
         {period.type !== 'week' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-12">
+            {period.type === 'year' && <Calendar period={period} values={values} />}
             <Days values={values} />
           </div>
         )}
