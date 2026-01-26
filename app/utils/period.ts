@@ -31,8 +31,8 @@ export function getInitialPeriod(periodType: TPeriodType): TPeriod {
       break;
   }
 
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(23, 59, 59, 999);
+  startDate.setHours(12, 0, 0, 0);
+  endDate.setHours(12, 0, 0, 0);
 
   return { type: periodType, startDate, endDate };
 }

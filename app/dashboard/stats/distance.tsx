@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { TPeriod } from '../../utils/period';
 
-import { statsMap, TValues } from './types';
+import { months, statsMap, TValues, weekDays } from './types';
 
 Chart.register(LinearScale, CategoryScale, BarController, BarElement, Tooltip);
 
@@ -25,19 +25,15 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
 
       if (periodType === 'year') {
         const year = startDate.getFullYear();
-        labels = new Array(12)
-          .fill(null)
-          .map((_, month) =>
-            new Intl.DateTimeFormat('fr', { month: 'short' }).format(new Date(year, month, 1))
-          );
-        tooltipLabels = new Array(12)
-          .fill(null)
-          .map((_, month) =>
-            new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(new Date(year, month, 1))
-          );
+        labels = months.map((month) =>
+          new Intl.DateTimeFormat('fr', { month: 'short' }).format(new Date(year, month, 1))
+        );
+        tooltipLabels = months.map((_, month) =>
+          new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(new Date(year, month, 1))
+        );
       } else {
         const currentDay = new Date(startDate);
-        while (currentDay.getTime() < endDate.getTime()) {
+        while (currentDay.getTime() <= endDate.getTime()) {
           labels.push(new Intl.DateTimeFormat('fr', periodType === 'week' ? {
             weekday: 'long',
           } : {
@@ -65,7 +61,13 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
         data: {
           labels,
           datasets: [{
-            data: values ? period.type === 'year' ? values.distancesByMonth : values.distancesByDays : [],
+            data: values ?
+              period.type === 'week' ?
+                weekDays.map((index) => values.distancesByWeekDays[index]) :
+                period.type === 'month' ?
+                  values.distancesByDays :
+                  values.distancesByMonth :
+              [],
             label: 'Distance roulée',
             backgroundColor: '#5ee9b5',
             borderRadius: 4,
@@ -121,7 +123,11 @@ export function Distance({ period, values }: { period: TPeriod; values: TValues 
   useEffect(() => {
     if (chartRef.current && values) {
       chartRef.current.data.datasets[0].data =
-        period.type === 'year' ? values.distancesByMonth : values.distancesByDays;
+        period.type === 'week' ?
+          weekDays.map((index) => values.distancesByWeekDays[index]) :
+          period.type === 'month' ?
+            values.distancesByDays :
+            values.distancesByMonth;
       chartRef.current.update();
     }
 

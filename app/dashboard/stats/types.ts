@@ -43,27 +43,29 @@ export const statsMap: {
 
 export const months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
 
-export const weekDays = [1, 2, 3, 4, 5, 6, 0] as const;
-
-type TWeekDay = (typeof weekDays) [number];
+export const weekDays = [1, 2, 3, 4, 5, 6, 0];
 
 const firstWeekDate = new Date();
 const weekDay = firstWeekDate.getDay();
 firstWeekDate.setDate(firstWeekDate.getDate() - weekDay + (weekDay == 0 ? -7 : 0));
-const weekDaysLabels = weekDays.map(() => {
+const weekDaysLabels = [1, 2, 3, 4, 5, 6].map(() => {
   firstWeekDate.setDate(firstWeekDate.getDate() + 1);
-  return new Intl.DateTimeFormat('fr', { weekday: 'short' }).format(firstWeekDate);
+  return {
+    label: new Intl.DateTimeFormat('fr', { weekday: 'long' }).format(firstWeekDate),
+    shortLabel: new Intl.DateTimeFormat('fr', { weekday: 'short' }).format(firstWeekDate),
+    firstLetter: new Intl.DateTimeFormat('fr', { weekday: 'short' }).format(firstWeekDate)[0],
+  };
 });
 
-export const weekDaysMap: { [key in TWeekDay]: { label: string } } = {
-  0: { label: weekDaysLabels[6] },
-  1: { label: weekDaysLabels[0] },
-  2: { label: weekDaysLabels[1] },
-  3: { label: weekDaysLabels[2] },
-  4: { label: weekDaysLabels[3] },
-  5: { label: weekDaysLabels[4] },
-  6: { label: weekDaysLabels[5] },
-}
+export const weekDaysMap: { [key: number]: { firstLetter: string; label: string; shortLabel: string } } = {
+  0: { ...weekDaysLabels[6] },
+  1: { ...weekDaysLabels[0] },
+  2: { ...weekDaysLabels[1] },
+  3: { ...weekDaysLabels[2] },
+  4: { ...weekDaysLabels[3] },
+  5: { ...weekDaysLabels[4] },
+  6: { ...weekDaysLabels[5] },
+};
 
 export const _weekDays = [
   { key: 1, shortLabel: 'L', label: 'lun.' },
@@ -77,4 +79,4 @@ export const _weekDays = [
 
 export type TValues =
   { [key in TStat | 'maxActiveDaysInARow' | 'maxActiveDaysInARowStartIndex']: number } &
-  { distancesByMonth: number[]; distancesByDays: number[]; distancesByWeekDays: number[] };
+  { distancesByMonth: number[]; distancesByDays: number[]; distancesByWeekDays: { [key: number]: number } };

@@ -73,12 +73,12 @@ export default function StatsPage() {
       const currentDay = new Date(startDate);
 
       let daysCount = 0;
-      while (currentDay.getTime() < endDate.getTime()) {
+      while (currentDay.getTime() <= endDate.getTime()) {
         const key = currentDay.toISOString().replace(/T.*/, '');
         const dayDiff =
-          (currentDay.getTime() - startDate.getTime() - 24 * 60 * 60 * 1000) +
+          (currentDay.getTime() - startDate.getTime()) +
           ((startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000);
-        const day = Math.floor(dayDiff / msInOneDay) - 1;
+        const day = Math.floor(dayDiff / msInOneDay);
 
         if (daysMap[key] && daysMap[key].journeys) {
           const month = currentDay.getMonth();
@@ -91,7 +91,7 @@ export default function StatsPage() {
           if (!distancesByMonth[month]) distancesByMonth[month] = distance;
           else distancesByMonth[month] += distance;
 
-          distancesByDays[day - 1] = distance;
+          distancesByDays[day] = distance;
 
           if (!distancesByWeekDays[weekDay]) distancesByWeekDays[weekDay] = distance;
           else distancesByWeekDays[weekDay] += distance;
@@ -99,7 +99,7 @@ export default function StatsPage() {
 
         if (activeDaysInARow > maxActiveDaysInARow) {
           maxActiveDaysInARow = activeDaysInARow;
-          maxActiveDaysInARowStartIndex = day - activeDaysInARow;
+          maxActiveDaysInARowStartIndex = day - activeDaysInARow + 1;
         }
 
         currentDay.setDate(currentDay.getDate() + 1);
@@ -116,7 +116,7 @@ export default function StatsPage() {
           maxActiveDaysInARowStartIndex,
           distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
           distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
-          distancesByWeekDays: weekDays.map((index) => distancesByWeekDays[index] || 0),
+          distancesByWeekDays,
         });
       }
     }

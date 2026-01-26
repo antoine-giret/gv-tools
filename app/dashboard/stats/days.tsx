@@ -12,7 +12,8 @@ export function Days({ values }: { values: TValues | undefined }) {
       let bestWeekDayIndex = 0;
       let bestWeekDayDistance = 0;
       if (values) {
-        values.distancesByWeekDays.forEach((distance, index) => {
+        weekDays.forEach((index) => {
+          const distance = values.distancesByWeekDays[index];
           if (distance > bestWeekDayDistance) {
             bestWeekDayIndex = index;
             bestWeekDayDistance = distance;
