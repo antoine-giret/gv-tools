@@ -9,7 +9,7 @@ export default function PrivatePage({ children }: { children: React.ReactNode; }
   const { signedInUser } = useContext(UserContext);
 
   useEffect(() => {
-    if (!signedInUser) redirect(`/login`);
+    if (signedInUser === null) redirect(`/login`);
   }, [signedInUser]);
 
   if (!signedInUser) return <></>;
