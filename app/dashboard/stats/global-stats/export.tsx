@@ -1,9 +1,9 @@
 import { Ref } from 'react';
+
+import { ExportLayout } from '../layouts/export';
 import { stats, statsMap, TValues } from '../types';
 
-import { Wrapper } from './wrapper';
-
-export function GlobalStatsPage(
+export function GlobalStatsExport(
   {
     ref,
     title,
@@ -17,7 +17,7 @@ export function GlobalStatsPage(
   },
 ) {
   return (
-    <Wrapper ref={ref} subtitle={subtitle} title={title}>
+    <ExportLayout ref={ref} subtitle={subtitle} title={title}>
       <div className="w-full grid grid-cols-2 gap-[100px]">
         {stats.map((key) => {
           const { Icon, label, unit, format } = statsMap[key];
@@ -37,6 +37,6 @@ export function GlobalStatsPage(
           );
         })}
       </div>
-    </Wrapper>
+    </ExportLayout>
   );
 }

@@ -43,7 +43,7 @@ export async function Wrapper({
   return (
     <CookiesProvider>
       <Providers user={user}>
-        <div className="relative min-h-screen flex flex-col overflow-y-hidden">
+        <div className="relative min-h-screen flex flex-col overflow-hidden">
           <Header />
           {children}
           <Footer />

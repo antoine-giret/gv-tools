@@ -18,8 +18,7 @@ export function getInitialPeriod(periodType: TPeriodType): TPeriod {
       break;
     case 'month':
       startDate.setDate(1);
-      endDate.setMonth(endDate.getMonth() + 1);
-      endDate.setDate(0);
+      endDate.setMonth(endDate.getMonth() + 1, 0);
 
       break;
     case 'year':

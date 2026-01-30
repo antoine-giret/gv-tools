@@ -1,10 +1,11 @@
 import { Ref } from 'react';
-import { statsMap, TValues } from '../types';
-import { TPeriod } from '../../../utils/period';
 
-import { Wrapper } from './wrapper';
-import { Calendar } from '../calendar';
+import { TPeriod } from '../../../utils/period';
 import { Days } from '../days';
+import { ExportLayout } from '../layouts/export';
+import { statsMap, TValues } from '../types';
+
+import { Calendar } from './calendar';
 
 const {
   activeDays: {
@@ -15,7 +16,7 @@ const {
   },
 } = statsMap;
 
-export function CalendarPage(
+export function CalendarExport(
   {
     ref,
     period,
@@ -31,7 +32,7 @@ export function CalendarPage(
   },
 ) {
   return (
-    <Wrapper ref={ref} subtitle={subtitle} title={title}>
+    <ExportLayout ref={ref} subtitle={subtitle} title={title}>
       <div className="w-full shrink-0 flex items-center gap-[50px]">
         <ActiveDaysIcon
           className="text-white"
@@ -49,9 +50,14 @@ export function CalendarPage(
         </div>
       </div>
       <div className="w-full grow flex flex-col gap-[50px]">
-        <Calendar download period={period} values={values} />
-        <Days download values={values} />
+        <div className="flex flex-col gap-6">
+          <h2 className="text-md font-bold text-white">
+            Calendrier des jours roulés
+          </h2>
+          <Calendar exported period={period} values={values} />
+        </div>
+        <Days exported values={values} />
       </div>
-    </Wrapper>
+    </ExportLayout>
   );
 }

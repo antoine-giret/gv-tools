@@ -2,20 +2,31 @@ import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip }
 import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { TPeriod } from '../../utils/period';
-
-import { months, statsMap, TValues, weekDays } from './types';
+import { TPeriod } from '../../../utils/period';
+import { months, statsMap, TValues, weekDays } from '../types';
 
 Chart.register(LinearScale, CategoryScale, BarController, BarElement, Tooltip);
 
 const { format: formatDistance } = statsMap.distance;
 
-export function Distance({ download, period, values }: { download?: boolean; period: TPeriod; values: TValues | undefined }) {
-  const chartId = useMemo(() => download ? 'distance-chart' : 'exported-distance-chart', [download]);
+export function DistanceChart({
+  exported,
+  period,
+  values,
+  setReady,
+}: {
+  exported?: boolean;
+  period: TPeriod;
+  setReady?: (ready: boolean) => void;
+  values: TValues | undefined;
+}) {
+  const chartId = useMemo(() => exported ? 'exported-distance-chart' : 'distance-chart', [exported]);
   const chartRef = useRef<Chart>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
     const ctx = document.getElementById(chartId);
     if (ctx && ctx instanceof HTMLCanvasElement) {
       const { type: periodType, startDate, endDate } = period;
@@ -81,7 +92,7 @@ export function Distance({ download, period, values }: { download?: boolean; per
                 display: false,
               },
               ticks: {
-                color: download ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                color: exported ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
                 maxRotation: 0,
               },
             },
@@ -89,10 +100,10 @@ export function Distance({ download, period, values }: { download?: boolean; per
               suggestedMax: 0,
               beginAtZero: true,
               grid: {
-                color: download || theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                color: exported || theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
               },
               ticks: {
-                color: download ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                color: exported ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
                 stepSize: 10000,
                 maxTicksLimit: 5,
                 callback: (value) => typeof value === 'number' ? `${formatDistance(value)} kms` : '',
@@ -101,7 +112,7 @@ export function Distance({ download, period, values }: { download?: boolean; per
           },
           plugins: {
             tooltip: {
-              enabled: !download,
+              enabled: !exported,
               callbacks: {
                 title: ([{ dataIndex }]) => tooltipLabels[dataIndex],
                 label: ({ parsed: { y } }) => ` ${y ? formatDistance(y) : 0} kms`,
@@ -110,9 +121,13 @@ export function Distance({ download, period, values }: { download?: boolean; per
           },
         },
       });
+
+      timeout = setTimeout(() => setReady?.(true), 500);
     }
 
     return () => {
+      if (timeout) clearTimeout(timeout);
+      setReady?.(false);
       if (chartRef.current) {
         chartRef.current.destroy();
         chartRef.current = null;
@@ -142,7 +157,7 @@ export function Distance({ download, period, values }: { download?: boolean; per
   }, [values]);
 
   return (
-    <div className={download ? 'h-120' : 'h-80'}>
+    <div className={exported ? 'h-100' : 'h-80'}>
       <canvas className="w-full h-full" id={chartId} />
     </div>
   );

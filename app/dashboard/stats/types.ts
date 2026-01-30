@@ -48,7 +48,7 @@ export const weekDays = [1, 2, 3, 4, 5, 6, 0];
 const firstWeekDate = new Date();
 const weekDay = firstWeekDate.getDay();
 firstWeekDate.setDate(firstWeekDate.getDate() - weekDay + (weekDay == 0 ? -7 : 0));
-const weekDaysLabels = [1, 2, 3, 4, 5, 6].map(() => {
+const weekDaysLabels = [1, 2, 3, 4, 5, 6, 7].map(() => {
   firstWeekDate.setDate(firstWeekDate.getDate() + 1);
   return {
     label: new Intl.DateTimeFormat('fr', { weekday: 'long' }).format(firstWeekDate),

@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
@@ -10,11 +10,10 @@ import { TUser } from '../../models/user';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
 
 import { Days } from './days';
+import { DaysCalendar } from './days-calendar';
 import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
-import { StatsExport, TStatsExportRef } from './image-export';
 import { months, TStat, TValues } from './types';
-import { Calendar } from './calendar';
 
 export default function StatsPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
@@ -22,7 +21,6 @@ export default function StatsPage() {
   const [values, setValues] = useState<TValues>();
   const [downloading, setDownloading] = useState(false);
   const { signedInUser } = useContext(UserContext);
-  const statsExportRef = useRef<TStatsExportRef>(null);
 
   useEffect(() => {
     let active = true;
@@ -134,18 +132,6 @@ export default function StatsPage() {
     };
   }, [signedInUser, period]);
 
-  async function download() {
-    setDownloading(true);
-
-    try {
-      await statsExportRef.current?.download();
-    } catch (err) {
-      console.error(err);
-    }
-
-    setDownloading(false);
-  }
-
   return (
     <PrivatePage>
       <div className="flex flex-col items-stretch gap-12">
@@ -160,21 +146,20 @@ export default function StatsPage() {
                 disabled={!values || downloading}
                 Icon={ArrowDownTrayIcon}
                 label="Télécharger"
-                onClick={download}
+                onClick={() => setDownloading(true)}
               />
             </div>
           </div>
         </div>
-        <GlobalStats values={values} />
+        <GlobalStats downloading={downloading} period={period} setDownloading={setDownloading} values={values} />
         <Distance period={period} values={values} />
         {period.type !== 'week' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-12">
-            {period.type === 'year' && <Calendar period={period} values={values} />}
+            {period.type === 'year' && <DaysCalendar period={period} values={values} />}
             <Days values={values} />
           </div>
         )}
       </div>
-      <StatsExport period={period} ref={statsExportRef} values={values} />
     </PrivatePage>
   );
 }

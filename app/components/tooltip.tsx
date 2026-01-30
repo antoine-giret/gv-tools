@@ -13,7 +13,7 @@ export function Tooltip(
     style?: CSSProperties;
   }
 ) {
-  if (label === '') return <>{children}</>;
+  if (label === '') return <div style={style}>{children}</div>;
 
   const positionClassNames = [];
   if (position === 'bottom' || position === 'bottom-left') {

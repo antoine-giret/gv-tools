@@ -1,6 +1,6 @@
 import { Ref } from 'react';
 
-export function Wrapper(
+export function ExportLayout(
   {
     ref,
     title,
