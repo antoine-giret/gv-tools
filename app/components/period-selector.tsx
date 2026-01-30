@@ -3,7 +3,7 @@
 import { ChevronDoubleRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { useMemo, useState } from 'react';
 
-import { getInitialPeriod, periodTypes, TPeriod, TPeriodType } from '../utils/period';
+import { getInitialPeriod, periodTypes as defaultPeriodTypes, TPeriod, TPeriodType } from '../utils/period';
 
 import { IconButton } from './icon-button';
 import { Select } from './select';
@@ -19,12 +19,15 @@ const now = new Date();
 
 export function PeriodSelector(
   {
+    periodTypes: customPeriodTypes,
     period,
     setPeriod,
   } : {
-    period: TPeriod,
+    period: TPeriod;
+    periodTypes?: TPeriodType[];
     setPeriod: (period: TPeriod) => void;
   }) {
+  const [periodTypes] = useState(customPeriodTypes || defaultPeriodTypes);
   const [periodType, setPeriodType] = useState<TPeriodType>('month');
   const [periodTypesOptions] = useState<Array<{ label: string; value: TPeriodType }>>(
     periodTypes.map((value) => ({ value, label: periodTypesLabels[value] })),
