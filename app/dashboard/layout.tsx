@@ -1,12 +1,13 @@
 'use client';
 
-import { ChartBarIcon, MapIcon } from '@heroicons/react/24/solid';
+import { ChartBarIcon, CurrencyEuroIcon, MapIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
   { Icon: ChartBarIcon, key: 'stats', label: 'Stats', path: '/dashboard/stats' },
   { Icon: MapIcon, key: 'heatmap', label: 'Heatmap', path: '/dashboard/heatmap' },
+  { Icon: CurrencyEuroIcon, key: 'fmd', label: 'FMD', path: '/dashboard/fmd' },
 ];
 
 export default function DashboardLayout({
