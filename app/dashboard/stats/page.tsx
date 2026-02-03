@@ -41,6 +41,11 @@ export default function StatsPage() {
         },
       );
 
+      if (res.status !== 200) {
+        console.error('cannot fetch stats');
+        return;
+      }
+
       const {
         count: journeys,
         distance,

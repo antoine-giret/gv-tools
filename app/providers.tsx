@@ -66,6 +66,8 @@ export function Providers({
           });
 
           return;
+        } else {
+          console.error('cannot fetch user');
         }
       }
 
