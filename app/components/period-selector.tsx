@@ -80,12 +80,7 @@ export function PeriodSelector({
 
     return { type: periodType, startDate, endDate };
   }, [periodType, period]);
-
-  function displayPrevPeriod() {
-    if (prevPeriod) setPeriod(prevPeriod);
-  }
-
-  function displayNextPeriod() {
+  const nextPeriod = useMemo(() => {
     const { startDate: _startDate, endDate: _endDate } = period;
     const startDate = new Date(_startDate);
     const endDate = new Date(_endDate);
@@ -110,7 +105,17 @@ export function PeriodSelector({
         break;
     }
 
-    setPeriod({ type: periodType, startDate, endDate });
+    if (startDate.getTime() > new Date().getTime()) return null;
+
+    return { type: periodType, startDate, endDate };
+  }, [periodType, period]);
+
+  function displayPrevPeriod() {
+    if (prevPeriod) setPeriod(prevPeriod);
+  }
+
+  function displayNextPeriod() {
+    if (nextPeriod) setPeriod(nextPeriod);
   }
 
   const { startDate, endDate } = period;
@@ -142,7 +147,7 @@ export function PeriodSelector({
               </Tooltip>
               <Tooltip label="Semaine suivante" position="bottom">
                 <IconButton
-                  disabled={isCurrentPeriod}
+                  disabled={!nextPeriod}
                   Icon={ChevronRightIcon}
                   label="Semaine suivante"
                   onClick={displayNextPeriod}
