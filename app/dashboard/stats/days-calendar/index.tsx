@@ -1,5 +1,5 @@
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '../../../components';
 import { TPeriod } from '../../../utils/period';
@@ -10,13 +10,7 @@ import { Calendar } from './calendar';
 import { CalendarExport } from './export';
 import { Legend } from './legend';
 
-export function DaysCalendar({
-  period,
-  values,
-}: {
-  period: TPeriod;
-  values: TValues | undefined;
-}) {
+export function DaysCalendar({ period, values }: { period: TPeriod; values: TValues | undefined }) {
   const [downloading, setDownloading] = useState(false);
   const {
     title: exportTitle,

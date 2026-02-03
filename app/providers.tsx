@@ -37,16 +37,19 @@ export function Providers({
           console.error(err);
         }
       }
-      
+
       if (userId && !Number.isNaN(userId) && authorizationToken) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v1/users/${userId}`, {
-          method: 'GET',
-          headers: {
-            'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
-            source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
-            Authorization: `Token ${authorizationToken}`,
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v1/users/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
+              source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
+              Authorization: `Token ${authorizationToken}`,
+            },
           },
-        });
+        );
 
         if (res.status === 200) {
           const { id, username, profile_picture } = await res.json();
@@ -62,7 +65,9 @@ export function Providers({
             authorizationToken,
             id,
             username,
-            profilePicture: profile_picture ? `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}${profile_picture}` : null,
+            profilePicture: profile_picture
+              ? `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}${profile_picture}`
+              : null,
           });
 
           return;
@@ -85,10 +90,8 @@ export function Providers({
   }, []);
 
   return (
-    <ThemeProvider attribute='class'>
-      <UserContext.Provider value={{ signedInUser, setUser }}>
-        {children}
-      </UserContext.Provider>
+    <ThemeProvider attribute="class">
+      <UserContext.Provider value={{ signedInUser, setUser }}>{children}</UserContext.Provider>
     </ThemeProvider>
   );
 }

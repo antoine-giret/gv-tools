@@ -77,9 +77,7 @@ export default function DashboardLayout({
         })}
         <div className="shrink-0 w-[1000px]" />
       </div>
-      <div className="grow flex flex-col p-6 min-w-0">
-        {children}
-      </div>
+      <div className="grow flex flex-col p-6 min-w-0">{children}</div>
     </div>
   );
 }

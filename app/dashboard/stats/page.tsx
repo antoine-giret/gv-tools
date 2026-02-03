@@ -27,7 +27,12 @@ export default function StatsPage() {
 
     async function fetchStats({ id: userId, authorizationToken }: TUser) {
       const { startDate, endDate } = period;
-      const startDateFormatted = startDate.toISOString().split('T')[0].split('-').reverse().join('-');
+      const startDateFormatted = startDate
+        .toISOString()
+        .split('T')[0]
+        .split('-')
+        .reverse()
+        .join('-');
       const endDateFormatted = endDate.toISOString().split('T')[0].split('-').reverse().join('-');
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v2/users/${userId}/stats_traces?period=custom&date_start=${startDateFormatted}&date_end=${endDateFormatted}&unit=day`,
@@ -58,15 +63,14 @@ export default function StatsPage() {
         duration: number;
       } = await res.json();
 
-      const daysMap = data.reduce<{ [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number } }>((
-        res,
-        { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration },
-      ) => {
+      const daysMap = data.reduce<{
+        [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number };
+      }>((res, { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration }) => {
         res[unit] = {
           journeys: dataJourneys,
           distance: dataDistance,
           duration: dataDuration,
-        }
+        };
         return res;
       }, {});
 
@@ -84,8 +88,9 @@ export default function StatsPage() {
       while (currentDay.getTime() <= endDate.getTime()) {
         const key = currentDay.toISOString().replace(/T.*/, '');
         const dayDiff =
-          (currentDay.getTime() - startDate.getTime()) +
-          ((startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000);
+          currentDay.getTime() -
+          startDate.getTime() +
+          (startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000;
         const day = Math.floor(dayDiff / msInOneDay);
 
         if (daysMap[key] && daysMap[key].journeys) {
@@ -123,7 +128,9 @@ export default function StatsPage() {
           maxActiveDaysInARow,
           maxActiveDaysInARowStartIndex,
           distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
-          distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
+          distancesByDays: new Array(daysCount)
+            .fill(null)
+            .map((_, index) => distancesByDays[index] || 0),
           distancesByWeekDays,
         });
       }
@@ -142,9 +149,7 @@ export default function StatsPage() {
       <div className="flex flex-col items-stretch gap-12">
         <div className="flex flex-col gap-6">
           <h1 className="text-lg font-bold">Mes statistiques</h1>
-          <div
-            className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-6 items-stretch sm:items-center md:items-stretch lg:items-center justify-between"
-          >
+          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-6 items-stretch sm:items-center md:items-stretch lg:items-center justify-between">
             <PeriodSelector period={period} setPeriod={setPeriod} />
             <div className="flex justify-end">
               <Button
@@ -156,7 +161,12 @@ export default function StatsPage() {
             </div>
           </div>
         </div>
-        <GlobalStats downloading={downloading} period={period} setDownloading={setDownloading} values={values} />
+        <GlobalStats
+          downloading={downloading}
+          period={period}
+          setDownloading={setDownloading}
+          values={values}
+        />
         <Distance period={period} values={values} />
         {period.type !== 'week' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-12">

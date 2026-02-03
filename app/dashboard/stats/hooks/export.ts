@@ -1,6 +1,6 @@
+import { saveAs } from 'file-saver';
 import html2canvas from 'html2canvas-pro';
 import { useEffect, useMemo, useState } from 'react';
-import { saveAs } from 'file-saver';
 
 import { TPeriod } from '../../../utils/period';
 
@@ -20,16 +20,18 @@ export function useExport({
     return period.startDate.getFullYear() === period.endDate.getFullYear();
   }, [period]);
   const startAndEndDateDuringSameMonth = useMemo(() => {
-    return startAndEndDateDuringSameYear && period.startDate.getMonth() === period.endDate.getMonth();
+    return (
+      startAndEndDateDuringSameYear && period.startDate.getMonth() === period.endDate.getMonth()
+    );
   }, [startAndEndDateDuringSameYear, period]);
   const subtitle = useMemo(() => {
     const { type, startDate, endDate } = period;
 
-    return type === 'week' ?
-        `Du ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: startAndEndDateDuringSameMonth ? undefined : 'short', year: startAndEndDateDuringSameYear ? undefined : 'numeric' }).format(startDate)} au ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: 'short', year: 'numeric' }).format(endDate)}` :
-        type === 'month' ?
-          new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(startDate) :
-          new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
+    return type === 'week'
+      ? `Du ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: startAndEndDateDuringSameMonth ? undefined : 'short', year: startAndEndDateDuringSameYear ? undefined : 'numeric' }).format(startDate)} au ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: 'short', year: 'numeric' }).format(endDate)}`
+      : type === 'month'
+        ? new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(startDate)
+        : new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
   }, [period, startAndEndDateDuringSameYear, startAndEndDateDuringSameMonth]);
 
   useEffect(() => {
@@ -58,20 +60,27 @@ export function useExport({
 
         const { type, startDate, endDate } = period;
 
-        const _subtitle = type === 'week' ?
-          [
-            new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(startDate).replaceAll('/', '_'),
-            new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(endDate).replaceAll('/', '_')
-          ].join('-') :
-          type === 'month' ?
-            new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(startDate).toLowerCase().replaceAll(' ', '_') :
-            new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
+        const _subtitle =
+          type === 'week'
+            ? [
+                new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  .format(startDate)
+                  .replaceAll('/', '_'),
+                new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  .format(endDate)
+                  .replaceAll('/', '_'),
+              ].join('-')
+            : type === 'month'
+              ? new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' })
+                  .format(startDate)
+                  .toLowerCase()
+                  .replaceAll(' ', '_')
+              : new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
 
-        saveAs(blob, `${[
-          'mon_activite_velo',
-          _subtitle,
-          title || '',
-        ].filter(Boolean).join('-')}.png`);
+        saveAs(
+          blob,
+          `${['mon_activite_velo', _subtitle, title || ''].filter(Boolean).join('-')}.png`,
+        );
       } catch (err) {
         console.error(err);
       }
@@ -84,7 +93,6 @@ export function useExport({
     return () => {
       active = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exportRef, ready]);
 
   return { title: 'Mon activité vélo', subtitle, setExportRef };

@@ -1,32 +1,40 @@
 'use client';
 
-import { ChevronDoubleRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import {
+  ChevronDoubleRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/solid';
 import { useMemo, useState } from 'react';
 
-import { getInitialPeriod, periodTypes as defaultPeriodTypes, TPeriod, TPeriodType } from '../utils/period';
+import {
+  getInitialPeriod,
+  periodTypes as defaultPeriodTypes,
+  TPeriod,
+  TPeriodType,
+} from '../utils/period';
 
 import { IconButton } from './icon-button';
 import { Select } from './select';
 import { Tooltip } from './tooltip';
 
-const periodTypesLabels: { [ key in TPeriodType]: string } = {
+const periodTypesLabels: { [key in TPeriodType]: string } = {
   month: 'Par mois',
   week: 'Par semaine',
-  year: 'Par an'
+  year: 'Par an',
 };
 
 const now = new Date();
 
-export function PeriodSelector(
-  {
-    periodTypes: customPeriodTypes,
-    period,
-    setPeriod,
-  } : {
-    period: TPeriod;
-    periodTypes?: TPeriodType[];
-    setPeriod: (period: TPeriod) => void;
-  }) {
+export function PeriodSelector({
+  periodTypes: customPeriodTypes,
+  period,
+  setPeriod,
+}: {
+  period: TPeriod;
+  periodTypes?: TPeriodType[];
+  setPeriod: (period: TPeriod) => void;
+}) {
   const [periodTypes] = useState(customPeriodTypes || defaultPeriodTypes);
   const [periodType, setPeriodType] = useState<TPeriodType>('month');
   const [periodTypesOptions] = useState<Array<{ label: string; value: TPeriodType }>>(
@@ -39,7 +47,9 @@ export function PeriodSelector(
     return period.startDate.getFullYear() === period.endDate.getFullYear();
   }, [period]);
   const startAndEndDateDuringSameMonth = useMemo(() => {
-    return startAndEndDateDuringSameYear && period.startDate.getMonth() === period.endDate.getMonth();
+    return (
+      startAndEndDateDuringSameYear && period.startDate.getMonth() === period.endDate.getMonth()
+    );
   }, [startAndEndDateDuringSameYear, period]);
   const prevPeriod = useMemo(() => {
     const { startDate: _startDate, endDate: _endDate } = period;
@@ -148,15 +158,18 @@ export function PeriodSelector(
               </Tooltip>
             </div>
             <span className="text-md">
-              Du {
-                new Intl.DateTimeFormat('fr', {
-                  day: '2-digit',
-                  month: startAndEndDateDuringSameMonth ? undefined : 'short',
-                  year: startAndEndDateDuringSameYear ? undefined : 'numeric',
-                })
-                  .format(startDate)
-              }{' '}
-              au {new Intl.DateTimeFormat('fr', { day: '2-digit', month: 'short', year: 'numeric' }).format(endDate)}
+              Du{' '}
+              {new Intl.DateTimeFormat('fr', {
+                day: '2-digit',
+                month: startAndEndDateDuringSameMonth ? undefined : 'short',
+                year: startAndEndDateDuringSameYear ? undefined : 'numeric',
+              }).format(startDate)}{' '}
+              au{' '}
+              {new Intl.DateTimeFormat('fr', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              }).format(endDate)}
             </span>
           </>
         ) : periodType === 'month' ? (

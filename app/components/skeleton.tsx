@@ -1,15 +1,7 @@
-export function Skeleton(
-  {
-    width,
-    ...props
-  }: (
-    { width: string } &
-    (
-      { variant: 'text' } |
-      { variant: 'circular'; height: string }
-    )
-  )
-) {
+export function Skeleton({
+  width,
+  ...props
+}: { width: string } & ({ variant: 'text' } | { variant: 'circular'; height: string })) {
   if (props.variant === 'circular') {
     const { height } = props;
 

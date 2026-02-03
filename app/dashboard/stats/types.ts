@@ -13,7 +13,7 @@ export const statsMap: {
     Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
     label: string;
     unit: string;
-  }
+  };
 } = {
   activeDays: {
     Icon: ActiveDaysIcon,
@@ -25,7 +25,8 @@ export const statsMap: {
     Icon: DistanceIcon,
     label: 'parcourus',
     unit: 'kms',
-    format: (value) => `${value > 100_000 ? formatNumber(Math.round(value / 1000)): formatNumber(Math.round(value / 100) / 10)}`,
+    format: (value) =>
+      `${value > 100_000 ? formatNumber(Math.round(value / 1000)) : formatNumber(Math.round(value / 100) / 10)}`,
   },
   duration: {
     Icon: DurationIcon,
@@ -57,7 +58,9 @@ const weekDaysLabels = [1, 2, 3, 4, 5, 6, 7].map(() => {
   };
 });
 
-export const weekDaysMap: { [key: number]: { firstLetter: string; label: string; shortLabel: string } } = {
+export const weekDaysMap: {
+  [key: number]: { firstLetter: string; label: string; shortLabel: string };
+} = {
   0: { ...weekDaysLabels[6] },
   1: { ...weekDaysLabels[0] },
   2: { ...weekDaysLabels[1] },
@@ -67,6 +70,10 @@ export const weekDaysMap: { [key: number]: { firstLetter: string; label: string;
   6: { ...weekDaysLabels[5] },
 };
 
-export type TValues =
-  { [key in TStat | 'maxActiveDaysInARow' | 'maxActiveDaysInARowStartIndex']: number } &
-  { distancesByMonth: number[]; distancesByDays: number[]; distancesByWeekDays: { [key: number]: number } };
+export type TValues = {
+  [key in TStat | 'maxActiveDaysInARow' | 'maxActiveDaysInARowStartIndex']: number;
+} & {
+  distancesByMonth: number[];
+  distancesByDays: number[];
+  distancesByWeekDays: { [key: number]: number };
+};

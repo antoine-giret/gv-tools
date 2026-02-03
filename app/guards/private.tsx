@@ -5,7 +5,7 @@ import { useContext, useEffect } from 'react';
 
 import { UserContext } from '../context';
 
-export default function PrivatePage({ children }: { children: React.ReactNode; }) {
+export default function PrivatePage({ children }: { children: React.ReactNode }) {
   const { signedInUser } = useContext(UserContext);
 
   useEffect(() => {

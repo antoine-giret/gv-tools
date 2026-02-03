@@ -3,19 +3,17 @@ import { Ref } from 'react';
 import { ExportLayout } from '../layouts/export';
 import { stats, statsMap, TValues } from '../types';
 
-export function GlobalStatsExport(
-  {
-    ref,
-    title,
-    subtitle,
-    values,
-  }: {
-    ref: Ref<HTMLDivElement>;
-    subtitle: string;
-    title: string;
-    values: TValues;
-  },
-) {
+export function GlobalStatsExport({
+  ref,
+  title,
+  subtitle,
+  values,
+}: {
+  ref: Ref<HTMLDivElement>;
+  subtitle: string;
+  title: string;
+  values: TValues;
+}) {
   return (
     <ExportLayout ref={ref} subtitle={subtitle} title={title}>
       <div className="w-full grid grid-cols-2 gap-[100px]">

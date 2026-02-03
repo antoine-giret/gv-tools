@@ -1,10 +1,10 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
- darkMode: "selector",
- content: ["./app/**/*.{js,ts,jsx,tsx,mdx}"],
- theme: {},
- plugins: [],
+  darkMode: 'selector',
+  content: ['./app/**/*.{js,ts,jsx,tsx,mdx}'],
+  theme: {},
+  plugins: [],
 };
 
 export default config;

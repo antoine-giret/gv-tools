@@ -1,4 +1,5 @@
 import { UserIcon } from '@heroicons/react/24/outline';
+
 import { Button } from '../components';
 import GuestPage from '../guards/guest';
 

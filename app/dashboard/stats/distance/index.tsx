@@ -9,7 +9,15 @@ import { TValues } from '../types';
 import { DistanceChart } from './chart';
 import { DistanceExport } from './export';
 
-export function Distance({ exported, period, values }: { exported?: boolean; period: TPeriod; values: TValues | undefined }) {
+export function Distance({
+  exported,
+  period,
+  values,
+}: {
+  exported?: boolean;
+  period: TPeriod;
+  values: TValues | undefined;
+}) {
   const [downloading, setDownloading] = useState(false);
   const [chartReady, setChartReady] = useState(false);
   const {

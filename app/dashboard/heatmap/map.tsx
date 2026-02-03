@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { getBounds } from '../../utils/map';
 
-const sourceId = 'traces'
+const sourceId = 'traces';
 
 export function Map({
   exported,
@@ -31,7 +31,7 @@ export function Map({
           fitBoundsOptions: { padding: 50 },
           canvasContextAttributes: {
             preserveDrawingBuffer: exported,
-          }
+          },
         });
       }
     }
@@ -50,20 +50,23 @@ export function Map({
     function initLayers() {
       if (!mapRef.current) return;
 
-      mapRef.current.addLayer({
-        'id': 'traces',
-        'type': 'line',
-        'source': sourceId,
-        'layout': {
-          'line-join': 'round',
-          'line-cap': 'round',
+      mapRef.current.addLayer(
+        {
+          id: 'traces',
+          type: 'line',
+          source: sourceId,
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#00bc7d',
+            'line-opacity': 0.5,
+            'line-width': 5,
+          },
         },
-        'paint': {
-          'line-color': '#00bc7d',
-          'line-opacity': 0.5,
-          'line-width': 5,
-        }
-      }, 'waterway_label');
+        'waterway_label',
+      );
     }
 
     function handleLoad() {
@@ -80,8 +83,7 @@ export function Map({
       mapRef.current?.remove();
       mapRef.current = null;
       setMapInitialized(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
   }, []);
 
   useEffect(() => {
@@ -91,7 +93,11 @@ export function Map({
         await source.setData(collection, true);
         const bounds = getBounds(collection);
         if (bounds)
-          mapRef.current?.fitBounds(bounds, { padding: 50, animate: exported ? false : true, maxDuration: 1000 });
+          mapRef.current?.fitBounds(bounds, {
+            padding: 50,
+            animate: exported ? false : true,
+            maxDuration: 1000,
+          });
         mapRef.current?.once('idle', () => setReady?.(true));
       }
     }
@@ -103,8 +109,7 @@ export function Map({
       if (source && source instanceof GeoJSONSource) {
         source.setData({ type: 'FeatureCollection', features: [] });
       }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
   }, [mapInitialized, tracesCollection]);
 
   return (

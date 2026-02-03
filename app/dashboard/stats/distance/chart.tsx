@@ -20,7 +20,10 @@ export function DistanceChart({
   setReady?: (ready: boolean) => void;
   values: TValues | undefined;
 }) {
-  const chartId = useMemo(() => exported ? 'exported-distance-chart' : 'distance-chart', [exported]);
+  const chartId = useMemo(
+    () => (exported ? 'exported-distance-chart' : 'distance-chart'),
+    [exported],
+  );
   const chartRef = useRef<Chart>(null);
   const { theme } = useTheme();
 
@@ -36,31 +39,47 @@ export function DistanceChart({
       if (periodType === 'year') {
         const year = startDate.getFullYear();
         labels = months.map((month) =>
-          new Intl.DateTimeFormat('fr', { month: 'short' }).format(new Date(year, month, 1))
+          new Intl.DateTimeFormat('fr', { month: 'short' }).format(new Date(year, month, 1)),
         );
         tooltipLabels = months.map((_, month) =>
-          new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(new Date(year, month, 1))
+          new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(
+            new Date(year, month, 1),
+          ),
         );
       } else {
         const currentDay = new Date(startDate);
         while (currentDay.getTime() <= endDate.getTime()) {
-          labels.push(new Intl.DateTimeFormat('fr', periodType === 'week' ? {
-            weekday: 'long',
-          } : {
-            weekday: 'short',
-            day: 'numeric',
-          }).format(currentDay));
+          labels.push(
+            new Intl.DateTimeFormat(
+              'fr',
+              periodType === 'week'
+                ? {
+                    weekday: 'long',
+                  }
+                : {
+                    weekday: 'short',
+                    day: 'numeric',
+                  },
+            ).format(currentDay),
+          );
 
-          tooltipLabels.push(new Intl.DateTimeFormat('fr', periodType === 'week' ? {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          } : {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-          }).format(currentDay));
+          tooltipLabels.push(
+            new Intl.DateTimeFormat(
+              'fr',
+              periodType === 'week'
+                ? {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }
+                : {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  },
+            ).format(currentDay),
+          );
 
           currentDay.setDate(currentDay.getDate() + 1);
         }
@@ -70,18 +89,20 @@ export function DistanceChart({
         type: 'bar',
         data: {
           labels,
-          datasets: [{
-            data: values ?
-              period.type === 'week' ?
-                weekDays.map((index) => values.distancesByWeekDays[index]) :
-                period.type === 'month' ?
-                  values.distancesByDays :
-                  values.distancesByMonth :
-              [],
-            label: 'Distance roulée',
-            backgroundColor: '#5ee9b5',
-            borderRadius: 4,
-          }],
+          datasets: [
+            {
+              data: values
+                ? period.type === 'week'
+                  ? weekDays.map((index) => values.distancesByWeekDays[index])
+                  : period.type === 'month'
+                    ? values.distancesByDays
+                    : values.distancesByMonth
+                : [],
+              label: 'Distance roulée',
+              backgroundColor: '#5ee9b5',
+              borderRadius: 4,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -92,7 +113,11 @@ export function DistanceChart({
                 display: false,
               },
               ticks: {
-                color: exported ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                color: exported
+                  ? '#fff'
+                  : theme === 'dark'
+                    ? 'rgba(255, 255, 255, 0.5)'
+                    : 'rgba(0, 0, 0, 0.5)',
                 maxRotation: 0,
               },
             },
@@ -100,13 +125,19 @@ export function DistanceChart({
               suggestedMax: 0,
               beginAtZero: true,
               grid: {
-                color: exported || theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                color:
+                  exported || theme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
               },
               ticks: {
-                color: exported ? '#fff' : theme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                color: exported
+                  ? '#fff'
+                  : theme === 'dark'
+                    ? 'rgba(255, 255, 255, 0.5)'
+                    : 'rgba(0, 0, 0, 0.5)',
                 stepSize: 10000,
                 maxTicksLimit: 5,
-                callback: (value) => typeof value === 'number' ? `${formatDistance(value)} kms` : '',
+                callback: (value) =>
+                  typeof value === 'number' ? `${formatDistance(value)} kms` : '',
               },
             },
           },
@@ -133,17 +164,16 @@ export function DistanceChart({
         chartRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, theme]);
 
   useEffect(() => {
     if (chartRef.current && values) {
       chartRef.current.data.datasets[0].data =
-        period.type === 'week' ?
-          weekDays.map((index) => values.distancesByWeekDays[index]) :
-          period.type === 'month' ?
-            values.distancesByDays :
-            values.distancesByMonth;
+        period.type === 'week'
+          ? weekDays.map((index) => values.distancesByWeekDays[index])
+          : period.type === 'month'
+            ? values.distancesByDays
+            : values.distancesByMonth;
       chartRef.current.update();
     }
 
@@ -153,7 +183,6 @@ export function DistanceChart({
         chartRef.current.update();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values]);
 
   return (

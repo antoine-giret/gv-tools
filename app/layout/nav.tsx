@@ -39,7 +39,11 @@ export function Nav() {
             <span className="text-md">{signedInUser.username}</span>
           </div>
           <Tooltip label="Se déconnecter" position="bottom-left">
-            <IconButton Icon={ArrowRightStartOnRectangleIcon} label="Se déconnecter" onClick={logout} />
+            <IconButton
+              Icon={ArrowRightStartOnRectangleIcon}
+              label="Se déconnecter"
+              onClick={logout}
+            />
           </Tooltip>
         </>
       )}

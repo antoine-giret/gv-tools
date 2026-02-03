@@ -16,8 +16,11 @@ export function GlobalStats({
   setDownloading: (downloading: boolean) => void;
   values: TValues | undefined;
 }) {
-  const { title: exportTitle, subtitle: exportSubtitle, setExportRef } =
-    useExport({ ready: true, period, setDownloading });
+  const {
+    title: exportTitle,
+    subtitle: exportSubtitle,
+    setExportRef,
+  } = useExport({ ready: true, period, setDownloading });
 
   return (
     <>
