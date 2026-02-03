@@ -1,5 +1,5 @@
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '../../../components';
 import { TPeriod } from '../../../utils/period';
@@ -17,6 +17,10 @@ export function Distance({ exported, period, values }: { exported?: boolean; per
     subtitle: exportSubtitle,
     setExportRef,
   } = useExport({ ready: chartReady, title: 'distance', period, setDownloading });
+
+  useEffect(() => {
+    return () => setChartReady(false);
+  }, [downloading]);
 
   return (
     <>
