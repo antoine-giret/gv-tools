@@ -40,6 +40,7 @@ export function PeriodSelector({
   const [periodTypesOptions] = useState<Array<{ label: string; value: TPeriodType }>>(
     periodTypes.map((value) => ({ value, label: periodTypesLabels[value] })),
   );
+  const disablePeriodTypeSelector = useMemo(() => periodTypes.length < 2, [periodTypes]);
   const isCurrentPeriod = useMemo(() => {
     return now.getTime() >= period.startDate.getTime() && now.getTime() <= period.endDate.getTime();
   }, [period]);
@@ -122,17 +123,19 @@ export function PeriodSelector({
 
   return (
     <div className="flex items-center gap-6">
-      <div className="w-32">
-        <Select
-          id="year"
-          onChange={(type) => {
-            setPeriodType(type);
-            setPeriod(getInitialPeriod(type));
-          }}
-          options={periodTypesOptions}
-          value={periodType}
-        />
-      </div>
+      {!disablePeriodTypeSelector && (
+        <div className="w-32">
+          <Select
+            id="periodType"
+            onChange={(type) => {
+              setPeriodType(type);
+              setPeriod(getInitialPeriod(type));
+            }}
+            options={periodTypesOptions}
+            value={periodType}
+          />
+        </div>
+      )}
       <div className="flex items-center gap-3">
         {periodType === 'week' ? (
           <>
@@ -188,6 +191,13 @@ export function PeriodSelector({
                   onClick={displayPrevPeriod}
                 />
               </Tooltip>
+              {disablePeriodTypeSelector && (
+                <span className="w-25 text-md text-center capitalize">
+                  {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(
+                    startDate,
+                  )}
+                </span>
+              )}
               <Tooltip label="Mois suivant" position="bottom">
                 <IconButton
                   disabled={isCurrentPeriod}
@@ -205,9 +215,13 @@ export function PeriodSelector({
                 />
               </Tooltip>
             </div>
-            <span className="text-md text-center capitalize">
-              {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(startDate)}
-            </span>
+            {!disablePeriodTypeSelector && (
+              <span className="text-md text-center capitalize">
+                {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(
+                  startDate,
+                )}
+              </span>
+            )}
           </>
         ) : (
           <>
