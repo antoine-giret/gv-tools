@@ -1,12 +1,19 @@
 import { useMemo } from 'react';
 
 import { Card } from '../../../components';
+import { TCommuteToWorkOccurencesMap } from '../../../models';
 import { TPeriod } from '../../../utils/period';
 import { weekDays, weekDaysMap } from '../../stats/types';
 
 import { Day } from './day';
 
-export function Calendar({ period }: { period: TPeriod }) {
+export function Calendar({
+  period,
+  commuteToWorkOccurrencesMap,
+}: {
+  commuteToWorkOccurrencesMap: TCommuteToWorkOccurencesMap | undefined;
+  period: TPeriod;
+}) {
   const prevMonthDays = useMemo(() => {
     const firstDay = period.startDate.getDay();
 
@@ -15,20 +22,21 @@ export function Calendar({ period }: { period: TPeriod }) {
       .map((_, index) => {
         const date = new Date(period.startDate);
         date.setDate(date.getDate() - index - 1);
+        const key = date.toISOString().split('T')[0];
 
-        return { index, date };
+        return { key, date };
       })
       .reverse();
   }, [period]);
   const days = useMemo(() => {
-    const days: Array<{ index: number; date: Date }> = [];
+    const days: Array<{ date: Date; key: string }> = [];
     const { startDate, endDate } = period;
     const currentDay = new Date(startDate);
-    let index = 0;
+
     while (currentDay.getTime() <= endDate.getTime()) {
-      days.push({ index, date: new Date(currentDay) });
+      const key = currentDay.toISOString().split('T')[0];
+      days.push({ key, date: new Date(currentDay) });
       currentDay.setDate(currentDay.getDate() + 1);
-      ++index;
     }
 
     return days;
@@ -39,8 +47,9 @@ export function Calendar({ period }: { period: TPeriod }) {
     return new Array(lastDay === 0 ? 0 : 7 - lastDay).fill(null).map((_, index) => {
       const date = new Date(period.endDate);
       date.setDate(date.getDate() + index + 1);
+      const key = date.toISOString().split('T')[0];
 
-      return { index, date };
+      return { key, date };
     });
   }, [period]);
 
@@ -59,13 +68,21 @@ export function Calendar({ period }: { period: TPeriod }) {
           );
         })}
         {prevMonthDays.map((day) => (
-          <Day inAnotherMonth day={day} key={day.index} />
+          <Day inAnotherMonth day={day} key={day.key} />
         ))}
         {days.map((day) => (
-          <Day day={day} key={day.index} />
+          <Day
+            commuteToWorkOccurrencesMap={
+              commuteToWorkOccurrencesMap
+                ? commuteToWorkOccurrencesMap[day.key] || { homeToWork: [], workToHome: [] }
+                : undefined
+            }
+            day={day}
+            key={day.key}
+          />
         ))}
         {nextMonthDays.map((day) => (
-          <Day inAnotherMonth day={day} key={day.index} />
+          <Day inAnotherMonth day={day} key={day.key} />
         ))}
       </div>
     </Card>

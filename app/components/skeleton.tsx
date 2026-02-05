@@ -3,8 +3,17 @@ export function Skeleton({
   ...props
 }: { width: string } & (
   | { align?: 'center'; size: 'lg' | 'sm'; variant: 'text' }
-  | { variant: 'circular'; height: string }
+  | { height: string; variant: 'circular' }
+  | { height: string; variant: 'rounded' }
 )) {
+  if (props.variant === 'rounded') {
+    const { height } = props;
+
+    return (
+      <div className={`animate-pulse ${height} ${width} bg-black/30 dark:bg-white/30 rounded-sm`} />
+    );
+  }
+
   if (props.variant === 'circular') {
     const { height } = props;
 

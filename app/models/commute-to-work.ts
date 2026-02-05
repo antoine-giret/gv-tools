@@ -7,3 +7,17 @@ export type TCommuteToWork = {
   work: TPoint;
   workToHomeDistance: number;
 };
+
+export type TCommuteToWorkOccurence = {
+  candidate: boolean;
+  commuteToWorkId: number;
+  direction: 'homeToWork' | 'workToHome';
+  date: Date;
+  enabled: boolean;
+  id: number;
+  order: number;
+};
+
+export type TCommuteToWorkOccurencesMap = {
+  [day: string]: { homeToWork: TCommuteToWorkOccurence[]; workToHome: TCommuteToWorkOccurence[] };
+};
