@@ -49,7 +49,7 @@ export default function DashboardLayout({
         })}
       </div>
       <div className="block md:hidden h-[50px] shrink-0" />
-      <div className="flex md:hidden fixed top-16 left-0 w-full bg-(--background) border-b-1 border-black/20 dark:border-white/20 overflow-x-scroll">
+      <div className="flex md:hidden fixed top-16 left-0 w-full bg-(--background) border-b-1 border-black/20 dark:border-white/20 overflow-x-scroll z-100">
         {navItems.map(({ key, Icon, label, path }) => {
           const active = pathname === path;
 

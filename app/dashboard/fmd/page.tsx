@@ -1,8 +1,9 @@
 'use client';
 
+import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { useContext, useEffect, useState } from 'react';
 
-import { PeriodSelector } from '../../components';
+import { IconButton, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
 import {
@@ -220,13 +221,25 @@ export default function FMDPage() {
   return (
     <PrivatePage>
       <div className="flex flex-col items-stretch gap-6 grow">
-        <h1 className="text-lg font-bold">Forfait Mobilités Durables</h1>
+        <div className="flex gap-3 items-center justify-between">
+          <h1 className="text-lg font-bold">Forfait Mobilités Durables</h1>
+          <div className="lg:hidden">
+            <IconButton
+              Icon={Cog6ToothIcon}
+              label="Paramètres"
+              onClick={() => {
+                const element = document.getElementById('config-card');
+                if (element) element.scrollIntoView();
+              }}
+            />
+          </div>
+        </div>
         <div className="flex flex-col lg:flex-row gap-6 items-stretch grow">
           <div className="flex flex-col gap-6 lg:grow">
             <PeriodSelector period={period} periodTypes={['month']} setPeriod={setPeriod} />
             <Calendar commuteToWorkOccurrencesMap={commuteToWorkOccurrencesMap} period={period} />
           </div>
-          <div className="flex flex-col gap-6 w-full lg:w-80 shrink-0 lg:border-t-0">
+          <div className="flex flex-col-reverse lg:flex-col gap-6 w-full lg:w-80 shrink-0 lg:border-t-0">
             <ConfigCard commutesToWork={commutesToWork} />
             <CompensationCard />
           </div>

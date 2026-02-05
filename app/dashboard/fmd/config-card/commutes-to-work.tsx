@@ -40,11 +40,13 @@ export function CommuteToWork({
   return (
     <div className="flex flex-col gap-2">
       <span className="text-sm text-black/70 dark:text-white/70">{title || 'Trajet vélotaf'}</span>
-      <Address Icon={HomeIcon} point={home} />
-      <Address Icon={BriefcaseIcon} point={work} />
-      <div className="flex gap-3 justify-end">
-        <Distance distance={homeToWorkDistance} label="Aller" />
-        <Distance distance={workToHomeDistance} label="Retour" />
+      <div className="flex flex-col gap-2 mx-2">
+        <Address Icon={HomeIcon} point={home} />
+        <Address Icon={BriefcaseIcon} point={work} />
+        <div className="flex gap-3 justify-end">
+          <Distance distance={homeToWorkDistance} label="Aller" />
+          <Distance distance={workToHomeDistance} label="Retour" />
+        </div>
       </div>
     </div>
   );
@@ -53,7 +55,7 @@ export function CommuteToWork({
 function Address({ Icon, point }: { Icon: typeof HomeIcon; point: TPoint | undefined }) {
   return (
     <div className="flex items-center gap-3">
-      <Icon className="size-4 shrink-0 text-emerald-500" />
+      <Icon className="size-4 shrink-0 text-black/70 dark:text-white/70" />
       <div className="grow truncate">
         {point ? (
           <span className="text-sm">{point.properties.title}</span>

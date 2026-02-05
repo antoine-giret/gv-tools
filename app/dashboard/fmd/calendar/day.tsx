@@ -39,9 +39,9 @@ export function Day({
   return (
     <Card>
       <div
-        className={`flex flex-col px-3 pt-1 pb-3 gap-3 ${inAnotherMonth ? 'bg-black/5 dark:bg-white/5 opacity-50' : ''}`}
+        className={`flex flex-col p-1 gap-2 ${inAnotherMonth ? 'bg-black/5 dark:bg-white/5 opacity-50' : ''}`}
       >
-        <span className="text-sm">{day}</span>
+        <span className="ml-1 text-sm">{day}</span>
         {enabled ? (
           inAnotherMonth ? (
             <div className="h-[52px]" />
