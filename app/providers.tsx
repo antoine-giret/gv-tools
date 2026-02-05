@@ -4,7 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 import { UserContext } from './context';
-import { TUser } from './models/user';
+import { TUser } from './models';
 
 export function Providers({
   cookiesStoreUserId,

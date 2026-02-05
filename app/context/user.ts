@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import { TUser } from '../models/user';
+import { TUser } from '../models';
 
 export const UserContext = createContext<{
   setUser: (user: TUser | null) => void;

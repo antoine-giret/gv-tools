@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
-import { TUser } from '../../models/user';
+import { TUser } from '../../models';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
 
 import { Days } from './days';

@@ -37,7 +37,7 @@ export function GlobalStats({
                   {value !== undefined ? (
                     <span className="text-lg font-bold text-center">{format(value)}</span>
                   ) : (
-                    <Skeleton variant="text" width="w-[50%]" />
+                    <Skeleton align="center" size="lg" variant="text" width="w-[50%]" />
                   )}
                   <span className="text-sm text-center text-black/70 dark:text-white/70">
                     {unit}&nbsp;{label}
