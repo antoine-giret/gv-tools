@@ -1,7 +1,7 @@
 import { Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { TCommuteToWork } from '@repo/models';
 
 import { Card } from '../../../components';
-import { TCommuteToWork } from '../../../models';
 
 import { CommutesToWork } from './commutes-to-work';
 
