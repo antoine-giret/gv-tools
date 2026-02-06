@@ -1,0 +1,37 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "lint:fix": "eslint --quiet --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@heroicons/react": "2.2.0",
+    "chart.js": "4.5.1",
+    "file-saver": "2.0.5",
+    "html2canvas-pro": "1.6.3",
+    "maplibre-gl": "5.17.0",
+    "next": "16.1.1",
+    "next-client-cookies": "2.1.0",
+    "next-themes": "0.4.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@tailwindcss/postcss": "4.1.18",
+    "@types/file-saver": "2.0.7",
+    "@types/node": "22.19.9",
+    "@types/react": "19.2.13",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3"
+  }
+}
