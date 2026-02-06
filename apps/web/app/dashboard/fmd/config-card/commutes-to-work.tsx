@@ -1,8 +1,8 @@
 import { BriefcaseIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { TCommuteToWork, TPoint } from '@repo/models';
 import { useMemo } from 'react';
 
 import { Skeleton } from '../../../components';
-import { TCommuteToWork, TPoint } from '../../../models';
 import { statsMap } from '../../stats/types';
 
 const { format: formatDistance } = statsMap.distance;

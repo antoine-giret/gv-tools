@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
+    "@repo/models": "*",
     "@repo/typescript-config": "*",
     "@tailwindcss/postcss": "4.1.18",
     "@types/file-saver": "2.0.7",

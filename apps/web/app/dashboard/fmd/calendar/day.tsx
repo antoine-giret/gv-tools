@@ -1,9 +1,9 @@
 import { HomeIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon, PlusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
+import { TCommuteToWorkOccurence } from '@repo/models';
 import { useMemo } from 'react';
 
 import { Card, Skeleton, Tooltip } from '../../../components';
-import { TCommuteToWorkOccurence } from '../../../models';
 
 const enableDays = [1, 2, 3, 4, 5];
 

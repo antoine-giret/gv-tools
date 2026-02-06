@@ -1,10 +1,10 @@
 'use client';
 
+import { TUser } from '@repo/models';
 import { ThemeProvider } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 import { UserContext } from './context';
-import { TUser } from './models';
 
 export function Providers({
   cookiesStoreUserId,

@@ -1,12 +1,12 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
+import { TUser } from '@repo/models';
 import { useContext, useEffect, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
-import { TUser } from '../../models';
 import { getInitialPeriod, TPeriodType } from '../../utils/period';
 
 import { Days } from './days';
