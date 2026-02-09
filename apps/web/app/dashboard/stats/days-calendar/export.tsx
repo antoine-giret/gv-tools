@@ -1,6 +1,6 @@
+import { TPeriod } from '@repo/models';
 import { Ref } from 'react';
 
-import { TPeriod } from '../../../utils/period';
 import { Days } from '../days';
 import { ExportLayout } from '../layouts/export';
 import { statsMap, TValues } from '../types';

@@ -1,8 +1,8 @@
+import { TPeriod } from '@repo/models';
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from 'chart.js';
 import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { TPeriod } from '../../../utils/period';
 import { months, statsMap, TValues, weekDays } from '../types';
 
 Chart.register(LinearScale, CategoryScale, BarController, BarElement, Tooltip);

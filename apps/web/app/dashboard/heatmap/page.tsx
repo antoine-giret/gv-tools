@@ -1,13 +1,14 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { TUser } from '@repo/models';
+import { TPeriod, TPeriodType, TUser } from '@repo/models';
+import { TraceService } from '@repo/services';
 import { useContext, useEffect, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
-import { getInitialPeriod, TPeriod, TPeriodType } from '../../utils/period';
+import { getInitialPeriod } from '../../utils/period';
 import { useExport } from '../stats/hooks/export';
 
 import { HeatmapExport } from './export';
@@ -34,39 +35,20 @@ export default function HeatmapPage() {
   useEffect(() => {
     let active = true;
 
-    async function fetchTraces({
-      user: { id: userId, authorizationToken },
-      period: { startDate, endDate },
-    }: {
-      period: TPeriod;
-      user: TUser;
-    }) {
-      const startDateFormatted = startDate.toISOString().split('T')[0].split('-').join('-');
-      const endDateFormatted = endDate.toISOString().split('T')[0].split('-').join('-');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v2/users/${userId}/simplified_traces?date_start=${startDateFormatted}&date_end=${endDateFormatted}&unit=day`,
-        {
-          method: 'GET',
-          headers: {
-            'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
-            source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
-            Authorization: `Token ${authorizationToken}`,
-          },
-        },
-      );
-
-      if (res.status !== 200) {
-        console.error('cannot fetch stats');
+    async function fetchTraces({ user: { id: userId }, period }: { period: TPeriod; user: TUser }) {
+      try {
+        const collection = await TraceService.fetchTraces<
+          GeoJSON.FeatureCollection<GeoJSON.LineString>
+        >({ userId, period });
+        if (active) {
+          setTracesCollection(
+            collection.features ? collection : { type: 'FeatureCollection', features: [] },
+          );
+        }
+      } catch (err) {
+        console.error('cannot fetch stats', err);
         if (active) setTracesCollection({ type: 'FeatureCollection', features: [] });
-        return;
       }
-
-      const collection = (await res.json()) as GeoJSON.FeatureCollection<GeoJSON.LineString>;
-
-      if (active)
-        setTracesCollection(
-          collection.features ? collection : { type: 'FeatureCollection', features: [] },
-        );
     }
 
     if (signedInUser) fetchTraces({ user: signedInUser, period });

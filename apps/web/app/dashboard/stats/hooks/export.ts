@@ -1,8 +1,7 @@
+import { TPeriod } from '@repo/models';
 import { saveAs } from 'file-saver';
 import html2canvas from 'html2canvas-pro';
 import { useEffect, useMemo, useState } from 'react';
-
-import { TPeriod } from '../../../utils/period';
 
 export function useExport({
   ready,

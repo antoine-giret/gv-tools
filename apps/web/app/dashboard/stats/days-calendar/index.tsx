@@ -1,8 +1,8 @@
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
+import { TPeriod } from '@repo/models';
 import { useState } from 'react';
 
 import { Button } from '../../../components';
-import { TPeriod } from '../../../utils/period';
 import { useExport } from '../hooks/export';
 import { TValues } from '../types';
 

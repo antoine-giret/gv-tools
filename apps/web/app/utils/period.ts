@@ -1,8 +1,4 @@
-export const periodTypes = ['week', 'month', 'year'] as const;
-
-export type TPeriodType = (typeof periodTypes)[number];
-
-export type TPeriod = { endDate: Date; startDate: Date; type: TPeriodType };
+import { TPeriod, TPeriodType } from '@repo/models';
 
 export function getInitialPeriod(periodType: TPeriodType): TPeriod {
   const startDate = new Date();

@@ -5,14 +5,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/solid';
+import { periodTypes as defaultPeriodTypes, TPeriod, TPeriodType } from '@repo/models';
 import { useMemo, useState } from 'react';
 
-import {
-  getInitialPeriod,
-  periodTypes as defaultPeriodTypes,
-  TPeriod,
-  TPeriodType,
-} from '../utils/period';
+import { getInitialPeriod } from '../utils/period';
 
 import { IconButton } from './icon-button';
 import { Select } from './select';

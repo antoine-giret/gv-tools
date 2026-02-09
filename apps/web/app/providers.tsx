@@ -1,6 +1,7 @@
 'use client';
 
 import { TUser } from '@repo/models';
+import { HttpService, UserService } from '@repo/services';
 import { ThemeProvider } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -39,20 +40,14 @@ export function Providers({
       }
 
       if (userId && !Number.isNaN(userId) && authorizationToken) {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v1/users/${userId}`,
-          {
-            method: 'GET',
-            headers: {
-              'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
-              source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
-              Authorization: `Token ${authorizationToken}`,
-            },
-          },
-        );
+        HttpService.authorizationToken = authorizationToken;
 
-        if (res.status === 200) {
-          const { id, username, profile_picture } = await res.json();
+        try {
+          const { id, username, profile_picture } = await UserService.fetchUser<{
+            id: number;
+            username: string;
+            profile_picture: string | null;
+          }>({ userId });
 
           try {
             localStorage.setItem('user_id', `${userId}`);
@@ -62,28 +57,33 @@ export function Providers({
           }
 
           setUser({
-            authorizationToken,
             id,
             username,
             profilePicture: profile_picture
               ? `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}${profile_picture}`
               : null,
           });
+        } catch (err) {
+          HttpService.authorizationToken = null;
+          console.error('cannot fetch user', err);
 
-          return;
-        } else {
-          console.error('cannot fetch user');
+          try {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('authorization_token');
+          } catch (err) {
+            console.error(err);
+          }
+
+          setUser(null);
+        }
+      } else {
+        try {
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('authorization_token');
+        } catch (err) {
+          console.error(err);
         }
       }
-
-      try {
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('authorization_token');
-      } catch (err) {
-        console.error(err);
-      }
-
-      setUser(null);
     }
 
     getUser();

@@ -1,13 +1,14 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { TUser } from '@repo/models';
+import { TPeriod, TPeriodType, TUser } from '@repo/models';
+import { StatsService } from '@repo/services';
 import { useContext, useEffect, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
-import { getInitialPeriod, TPeriodType } from '../../utils/period';
+import { getInitialPeriod } from '../../utils/period';
 
 import { Days } from './days';
 import { DaysCalendar } from './days-calendar';
@@ -25,118 +26,98 @@ export default function StatsPage() {
   useEffect(() => {
     let active = true;
 
-    async function fetchStats({ id: userId, authorizationToken }: TUser) {
-      const { startDate, endDate } = period;
-      const startDateFormatted = startDate
-        .toISOString()
-        .split('T')[0]
-        .split('-')
-        .reverse()
-        .join('-');
-      const endDateFormatted = endDate.toISOString().split('T')[0].split('-').reverse().join('-');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/v2/users/${userId}/stats_traces?period=custom&date_start=${startDateFormatted}&date_end=${endDateFormatted}&unit=day`,
-        {
-          method: 'GET',
-          headers: {
-            'Api-Key': process.env.NEXT_PUBLIC_GV_API_KEY || '',
-            source: process.env.NEXT_PUBLIC_GV_SOURCE || '',
-            Authorization: `Token ${authorizationToken}`,
-          },
-        },
-      );
-
-      if (res.status !== 200) {
-        console.error('cannot fetch stats');
-        return;
-      }
-
-      const {
-        count: journeys,
-        distance,
-        duration,
-        data,
-      }: {
-        count: number;
-        data: Array<{ count: number; distance: number; duration: number; unit: number }>;
-        distance: number;
-        duration: number;
-      } = await res.json();
-
-      const daysMap = data.reduce<{
-        [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number };
-      }>((res, { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration }) => {
-        res[unit] = {
-          journeys: dataJourneys,
-          distance: dataDistance,
-          duration: dataDuration,
-        };
-        return res;
-      }, {});
-
-      let activeDays = 0;
-      let activeDaysInARow = 0;
-      let maxActiveDaysInARow = 0;
-      let maxActiveDaysInARowStartIndex = 0;
-      const distancesByMonth: { [key: number]: number } = {};
-      const distancesByDays: { [key: number]: number } = {};
-      const distancesByWeekDays: { [key: number]: number } = {};
-      const msInOneDay = 1000 * 60 * 60 * 24;
-      const currentDay = new Date(startDate);
-
-      let daysCount = 0;
-      while (currentDay.getTime() <= endDate.getTime()) {
-        const key = currentDay.toISOString().replace(/T.*/, '');
-        const dayDiff =
-          currentDay.getTime() -
-          startDate.getTime() +
-          (startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000;
-        const day = Math.floor(dayDiff / msInOneDay);
-
-        if (daysMap[key] && daysMap[key].journeys) {
-          const month = currentDay.getMonth();
-          const weekDay = currentDay.getDay();
-          const { distance } = daysMap[key];
-
-          ++activeDays;
-          ++activeDaysInARow;
-
-          if (!distancesByMonth[month]) distancesByMonth[month] = distance;
-          else distancesByMonth[month] += distance;
-
-          distancesByDays[day] = distance;
-
-          if (!distancesByWeekDays[weekDay]) distancesByWeekDays[weekDay] = distance;
-          else distancesByWeekDays[weekDay] += distance;
-        } else activeDaysInARow = 0;
-
-        if (activeDaysInARow > maxActiveDaysInARow) {
-          maxActiveDaysInARow = activeDaysInARow;
-          maxActiveDaysInARowStartIndex = day - activeDaysInARow + 1;
-        }
-
-        currentDay.setDate(currentDay.getDate() + 1);
-        ++daysCount;
-      }
-
-      if (active) {
-        setValues({
-          journeys,
+    async function fetchStats({ id: userId }: TUser, period: TPeriod) {
+      try {
+        const {
+          count: journeys,
           distance,
           duration,
-          activeDays,
-          maxActiveDaysInARow,
-          maxActiveDaysInARowStartIndex,
-          distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
-          distancesByDays: new Array(daysCount)
-            .fill(null)
-            .map((_, index) => distancesByDays[index] || 0),
-          distancesByWeekDays,
-        });
+          data,
+        } = await StatsService.fetchStats<{
+          count: number;
+          data: Array<{ count: number; distance: number; duration: number; unit: number }>;
+          distance: number;
+          duration: number;
+        }>({ userId, period });
+
+        const daysMap = data.reduce<{
+          [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number };
+        }>((res, { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration }) => {
+          res[unit] = {
+            journeys: dataJourneys,
+            distance: dataDistance,
+            duration: dataDuration,
+          };
+          return res;
+        }, {});
+
+        let activeDays = 0;
+        let activeDaysInARow = 0;
+        let maxActiveDaysInARow = 0;
+        let maxActiveDaysInARowStartIndex = 0;
+        const distancesByMonth: { [key: number]: number } = {};
+        const distancesByDays: { [key: number]: number } = {};
+        const distancesByWeekDays: { [key: number]: number } = {};
+        const msInOneDay = 1000 * 60 * 60 * 24;
+        const { startDate, endDate } = period;
+        const currentDay = new Date(startDate);
+
+        let daysCount = 0;
+        while (currentDay.getTime() <= endDate.getTime()) {
+          const key = currentDay.toISOString().replace(/T.*/, '');
+          const dayDiff =
+            currentDay.getTime() -
+            startDate.getTime() +
+            (startDate.getTimezoneOffset() - currentDay.getTimezoneOffset()) * 60 * 1000;
+          const day = Math.floor(dayDiff / msInOneDay);
+
+          if (daysMap[key] && daysMap[key].journeys) {
+            const month = currentDay.getMonth();
+            const weekDay = currentDay.getDay();
+            const { distance } = daysMap[key];
+
+            ++activeDays;
+            ++activeDaysInARow;
+
+            if (!distancesByMonth[month]) distancesByMonth[month] = distance;
+            else distancesByMonth[month] += distance;
+
+            distancesByDays[day] = distance;
+
+            if (!distancesByWeekDays[weekDay]) distancesByWeekDays[weekDay] = distance;
+            else distancesByWeekDays[weekDay] += distance;
+          } else activeDaysInARow = 0;
+
+          if (activeDaysInARow > maxActiveDaysInARow) {
+            maxActiveDaysInARow = activeDaysInARow;
+            maxActiveDaysInARowStartIndex = day - activeDaysInARow + 1;
+          }
+
+          currentDay.setDate(currentDay.getDate() + 1);
+          ++daysCount;
+        }
+
+        if (active) {
+          setValues({
+            journeys,
+            distance,
+            duration,
+            activeDays,
+            maxActiveDaysInARow,
+            maxActiveDaysInARowStartIndex,
+            distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
+            distancesByDays: new Array(daysCount)
+              .fill(null)
+              .map((_, index) => distancesByDays[index] || 0),
+            distancesByWeekDays,
+          });
+        }
+      } catch (err) {
+        console.error('cannot fetch stats', err);
       }
     }
 
-    if (signedInUser) fetchStats(signedInUser);
+    if (signedInUser) fetchStats(signedInUser, period);
 
     return () => {
       active = false;

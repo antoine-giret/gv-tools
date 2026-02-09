@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/solid';
+import { HttpService } from '@repo/services';
 import Image from 'next/image';
 import { useCookies } from 'next-client-cookies';
 import { useContext } from 'react';
@@ -15,6 +16,16 @@ export function Nav() {
   function logout() {
     cookies.remove('user_id');
     cookies.remove('authorization_token');
+
+    HttpService.authorizationToken = null;
+
+    try {
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('authorization_token');
+    } catch (err) {
+      console.error(err);
+    }
+
     setUser(null);
   }
 

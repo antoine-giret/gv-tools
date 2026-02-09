@@ -1,8 +1,7 @@
-import { TCommuteToWorkOccurencesMap } from '@repo/models';
+import { TCommuteToWorkOccurencesMap, TPeriod } from '@repo/models';
 import { useMemo } from 'react';
 
 import { Card } from '../../../components';
-import { TPeriod } from '../../../utils/period';
 import { weekDays, weekDaysMap } from '../../stats/types';
 
 import { Day } from './day';

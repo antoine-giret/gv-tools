@@ -1,5 +1,6 @@
+import { TPeriod } from '@repo/models';
+
 import { Card, Skeleton } from '../../../components';
-import { TPeriod } from '../../../utils/period';
 import { useExport } from '../hooks/export';
 import { stats, statsMap, TValues } from '../types';
 

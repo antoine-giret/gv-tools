@@ -1,7 +1,7 @@
+import { TPeriod } from '@repo/models';
 import { useMemo } from 'react';
 
 import { Tooltip } from '../../../components';
-import { TPeriod } from '../../../utils/period';
 import { statsMap, TValues, weekDaysMap } from '../types';
 
 const {
