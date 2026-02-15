@@ -2,7 +2,7 @@ import { BriefcaseIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { TCommuteToWork, TPoint } from '@repo/models';
 import { useMemo } from 'react';
 
-import { Skeleton } from '../../../components';
+import { Card, Skeleton } from '../../../components';
 import { statsMap } from '../../stats/types';
 
 const { format: formatDistance } = statsMap.distance;
@@ -14,6 +14,7 @@ export function CommutesToWork({
 }) {
   return (
     <div className="flex flex-col gap-3">
+      <span className="text-sm font-bold">Trajets</span>
       {commutesToWork?.map((commuteToWork, index) => (
         <CommuteToWork
           commuteToWork={commuteToWork}
@@ -38,17 +39,19 @@ export function CommuteToWork({
   const workToHomeDistance = useMemo(() => commuteToWork?.workToHomeDistance, [commuteToWork]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-sm text-black/70 dark:text-white/70">{title || 'Trajet vélotaf'}</span>
-      <div className="flex flex-col gap-2 mx-2">
-        <Address Icon={HomeIcon} point={home} />
-        <Address Icon={BriefcaseIcon} point={work} />
-        <div className="flex gap-3 justify-end">
-          <Distance distance={homeToWorkDistance} label="Aller" />
-          <Distance distance={workToHomeDistance} label="Retour" />
+    <Card>
+      <div className="flex flex-col gap-2 p-2">
+        {title && <span className="text-sm text-black/70 dark:text-white/70">{title}</span>}
+        <div className="flex flex-col gap-2 mx-2">
+          <Address Icon={HomeIcon} point={home} />
+          <Address Icon={BriefcaseIcon} point={work} />
+          <div className="flex gap-3 justify-end">
+            <Distance distance={homeToWorkDistance} label="Aller" />
+            <Distance distance={workToHomeDistance} label="Retour" />
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
