@@ -1,13 +1,13 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { TPeriod, TPeriodType, TUser } from '@repo/models';
-import { TraceService } from '@repo/services';
+import { TPeriodType } from '@repo/models';
 import { useContext, useEffect, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
+import { useTraces } from '../../hooks/queries/use-traces';
 import { getInitialPeriod } from '../../utils/period';
 import { useExport } from '../stats/hooks/export';
 
@@ -17,8 +17,6 @@ import { Map } from './map';
 export default function HeatmapPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
   const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
-  const [tracesCollection, setTracesCollection] =
-    useState<GeoJSON.FeatureCollection<GeoJSON.LineString>>();
   const [downloading, setDownloading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const { signedInUser } = useContext(UserContext);
@@ -32,32 +30,7 @@ export default function HeatmapPage() {
     return () => setMapReady(false);
   }, [downloading]);
 
-  useEffect(() => {
-    let active = true;
-
-    async function fetchTraces({ user: { id: userId }, period }: { period: TPeriod; user: TUser }) {
-      try {
-        const collection = await TraceService.fetchTraces<
-          GeoJSON.FeatureCollection<GeoJSON.LineString>
-        >({ userId, period });
-        if (active) {
-          setTracesCollection(
-            collection.features ? collection : { type: 'FeatureCollection', features: [] },
-          );
-        }
-      } catch (err) {
-        console.error('cannot fetch stats', err);
-        if (active) setTracesCollection({ type: 'FeatureCollection', features: [] });
-      }
-    }
-
-    if (signedInUser) fetchTraces({ user: signedInUser, period });
-
-    return () => {
-      active = false;
-      setTracesCollection(undefined);
-    };
-  }, [signedInUser, period]);
+  const { data: tracesCollection, isFetching } = useTraces({ user: signedInUser, period });
 
   return (
     <>
@@ -73,7 +46,12 @@ export default function HeatmapPage() {
               />
               <div className="flex justify-end">
                 <Button
-                  disabled={!tracesCollection || downloading}
+                  disabled={
+                    isFetching ||
+                    !tracesCollection ||
+                    tracesCollection.features.length === 0 ||
+                    downloading
+                  }
                   Icon={ArrowDownTrayIcon}
                   label="Télécharger"
                   onClick={() => setDownloading(true)}

@@ -2,10 +2,14 @@
 
 import { TUser } from '@repo/models';
 import { HttpService, UserService } from '@repo/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 import { UserContext } from './context';
+
+const queryClient = new QueryClient();
 
 export function Providers({
   cookiesStoreUserId,
@@ -58,6 +62,7 @@ export function Providers({
 
           setUser({
             id,
+            authorizationToken,
             username,
             profilePicture: profile_picture
               ? `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}${profile_picture}`
@@ -91,7 +96,12 @@ export function Providers({
 
   return (
     <ThemeProvider attribute="class">
-      <UserContext.Provider value={{ signedInUser, setUser }}>{children}</UserContext.Provider>
+      <UserContext.Provider value={{ signedInUser, setUser }}>
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools initialIsOpen={false} />
+          {children}
+        </QueryClientProvider>
+      </UserContext.Provider>
     </ThemeProvider>
   );
 }
