@@ -34,7 +34,7 @@ export function Days({ exported, values }: { exported?: boolean; values: TValues
         {weekDays.map((index) => {
           const { shortLabel } = weekDaysMap[index];
           const isBestWeekDay = index === bestWeekDayIndex;
-          const value = values ? values.distancesByWeekDays[index] : undefined;
+          const value = values ? values.distancesByWeekDays[index] || 0 : undefined;
           const percentage =
             value !== undefined && bestWeekDayDistance != undefined
               ? (value / bestWeekDayDistance) * 100
