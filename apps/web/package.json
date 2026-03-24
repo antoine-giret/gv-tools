@@ -27,7 +27,6 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/models": "*",
-    "@repo/services": "*",
     "@repo/typescript-config": "*",
     "@tailwindcss/postcss": "4.1.18",
     "@tanstack/react-query-devtools": "5.91.3",

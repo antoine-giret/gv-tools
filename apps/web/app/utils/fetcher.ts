@@ -1,5 +1,3 @@
-import { TUser } from '@repo/models';
-
 export async function geoveloFetch<T>({
   endpoint,
   queryParams,
@@ -9,7 +7,7 @@ export async function geoveloFetch<T>({
   endpoint: string;
   queryParams?: Array<{ key: string; value: string }>;
   method?: 'GET';
-  user?: TUser | null;
+  user?: { authorizationToken: string } | null;
 }) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}/api/${endpoint}${queryParams ? `?${queryParams.map(({ key, value }) => [key, value].join('=')).join('&')}` : ''}`,

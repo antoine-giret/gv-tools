@@ -1,32 +1,17 @@
 'use client';
 
 import { ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/solid';
-import { HttpService } from '@repo/services';
 import Image from 'next/image';
-import { useCookies } from 'next-client-cookies';
 import { useContext } from 'react';
 
 import { IconButton, Tooltip } from '../components';
 import { UserContext } from '../context';
 
 export function Nav() {
-  const { signedInUser, setUser } = useContext(UserContext);
-  const cookies = useCookies();
+  const { signedInUser, signOut } = useContext(UserContext);
 
-  function logout() {
-    cookies.remove('user_id');
-    cookies.remove('authorization_token');
-
-    HttpService.authorizationToken = null;
-
-    try {
-      localStorage.removeItem('user_id');
-      localStorage.removeItem('authorization_token');
-    } catch (err) {
-      console.error(err);
-    }
-
-    setUser(null);
+  function handleSignOut() {
+    signOut();
   }
 
   return (
@@ -53,7 +38,7 @@ export function Nav() {
             <IconButton
               Icon={ArrowRightStartOnRectangleIcon}
               label="Se déconnecter"
-              onClick={logout}
+              onClick={handleSignOut}
             />
           </Tooltip>
         </>
