@@ -1,6 +1,11 @@
+import {
+  ArrowPathRoundedSquareIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  PlayPauseIcon,
+} from '@heroicons/react/24/outline';
 import { JSX, SVGProps } from 'react';
 
-import { ActiveDaysIcon, DistanceIcon, DurationIcon, JourneysIcon } from '../../components/icons';
 import { formatNumber } from '../../utils/stats';
 
 export const stats = ['distance', 'activeDays', 'journeys', 'duration'] as const;
@@ -10,32 +15,32 @@ export type TStat = (typeof stats)[number];
 export const statsMap: {
   [key in TStat]: {
     format: (value: number) => string;
-    Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+    Icon: ((props: SVGProps<SVGSVGElement>) => JSX.Element) | typeof CalendarDaysIcon;
     label: string;
     unit: string;
   };
 } = {
   activeDays: {
-    Icon: ActiveDaysIcon,
+    Icon: CalendarDaysIcon,
     label: 'actifs',
     unit: 'jours',
     format: formatNumber,
   },
   distance: {
-    Icon: DistanceIcon,
+    Icon: ArrowPathRoundedSquareIcon,
     label: 'parcourus',
     unit: 'kms',
     format: (value) =>
       `${value > 100_000 ? formatNumber(Math.round(value / 1000)) : formatNumber(Math.round(value / 100) / 10)}`,
   },
   duration: {
-    Icon: DurationIcon,
+    Icon: ClockIcon,
     label: 'roulées',
     unit: 'heures',
     format: (value) => `${formatNumber(Math.round(value / 3600))}`,
   },
   journeys: {
-    Icon: JourneysIcon,
+    Icon: PlayPauseIcon,
     label: 'effectués',
     unit: 'trajets',
     format: formatNumber,

@@ -1,7 +1,7 @@
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/solid';
 import { TPeriod } from '@repo/models';
 
 import { Card, Skeleton } from '../../../components';
-import { TrendingDownIcon, TrendingUpIcon } from '../../../components/icons';
 import { useExport } from '../hooks/export';
 import { stats, statsMap, TValues } from '../types';
 
@@ -57,9 +57,9 @@ export function GlobalStats({
                         className={`h-6 flex items-center justify-center gap-2 text-sm text-center ${diff < 0 ? 'text-red-500 dark:text-red-300' : 'text-emerald-500 dark:text-emerald-300'}`}
                       >
                         {diff < 0 ? (
-                          <TrendingDownIcon className="size-4 shrink-0" />
+                          <ArrowTrendingDownIcon className="size-4 shrink-0" />
                         ) : (
-                          <TrendingUpIcon className="size-4 shrink-0" />
+                          <ArrowTrendingUpIcon className="size-4 shrink-0" />
                         )}
                         <span className="truncate">
                           {diff < 0 ? '-' : '+'}
