@@ -2,7 +2,7 @@ export function Skeleton({
   width,
   ...props
 }: { width: string } & (
-  | { align?: 'center'; size: 'lg' | 'sm'; variant: 'text' }
+  | { align?: 'center'; size: 'xl' | 'lg' | 'sm'; variant: 'text' }
   | { height: string; variant: 'circular' }
   | { height: string; variant: 'rounded' }
 )) {
@@ -26,10 +26,10 @@ export function Skeleton({
 
   const { size, align } = props;
   const wrapperClassName = [
-    size === 'lg' ? 'h-7' : 'h-6',
+    size === 'xl' ? 'h-[28px]' : size === 'lg' ? 'h-7' : 'h-6',
     align === 'center' ? 'justify-center' : '',
   ].join(' ');
-  const className = size === 'lg' ? 'h-4' : 'h-3';
+  const className = size === 'xl' ? 'h-5' : size === 'lg' ? 'h-4' : 'h-3';
 
   return (
     <div className={`animate-pulse flex items-center w-full ${wrapperClassName}`}>

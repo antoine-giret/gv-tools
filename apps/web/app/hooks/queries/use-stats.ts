@@ -3,13 +3,25 @@ import { useQuery } from '@tanstack/react-query';
 
 import { geoveloFetch } from '../../utils/fetcher';
 
-export function useStats({ user, period }: { user: TUser | null | undefined; period: TPeriod }) {
+export type TStatsData = {
+  count: number;
+  data: Array<{ count: number; distance: number; duration: number; unit: number }>;
+  distance: number;
+  duration: number;
+};
+
+export function useStats({
+  user,
+  period,
+}: {
+  user: TUser | null | undefined;
+  period: TPeriod | null;
+}) {
   const userId = user?.id;
-  const { startDate, endDate } = period;
   const startDateFormatted =
-    startDate.toISOString().split('T')[0]?.split('-').reverse().join('-') || '';
+    period?.startDate.toISOString().split('T')[0]?.split('-').reverse().join('-') || '';
   const endDateFormatted =
-    endDate.toISOString().split('T')[0]?.split('-').reverse().join('-') || '';
+    period?.endDate.toISOString().split('T')[0]?.split('-').reverse().join('-') || '';
 
   return useQuery({
     queryKey: ['stats', userId, startDateFormatted, endDateFormatted],
@@ -21,17 +33,12 @@ export function useStats({ user, period }: { user: TUser | null | undefined; per
         { key: 'unit', value: 'day' },
       ];
 
-      return geoveloFetch<{
-        count: number;
-        data: Array<{ count: number; distance: number; duration: number; unit: number }>;
-        distance: number;
-        duration: number;
-      }>({
+      return geoveloFetch<TStatsData>({
         endpoint: `/v2/users/${userId}/stats_traces`,
         queryParams,
         user,
       });
     },
-    enabled: !!userId,
+    enabled: !!userId && !!period,
   });
 }
