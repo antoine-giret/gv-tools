@@ -35,10 +35,10 @@ export default function HeatmapPage() {
   return (
     <>
       <PrivatePage>
-        <div className="flex flex-col items-stretch gap-6 grow">
+        <div className="flex flex-col items-stretch gap-6 grow @container">
           <div className="flex flex-col gap-6 shrink-0">
             <h1 className="text-lg font-bold">Ma heatmap</h1>
-            <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-6 items-stretch sm:items-center md:items-stretch lg:items-center justify-between">
+            <div className="flex flex-col @2xl:flex-row gap-6 items-stretch @2xl:items-center justify-between">
               <PeriodSelector
                 period={period}
                 periodTypes={['month', 'year']}
