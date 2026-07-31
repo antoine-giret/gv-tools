@@ -2,7 +2,7 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { TPeriod } from '@repo/models';
 import { useState } from 'react';
 
-import { Button } from '../../../components';
+import { Button, Skeleton } from '../../../components';
 import { useExport } from '../hooks/export';
 import { TValues } from '../types';
 
@@ -22,9 +22,23 @@ export function DaysCalendar({ period, values }: { period: TPeriod; values: TVal
     <>
       <div className="flex flex-col gap-6">
         <div className="flex gap-6 items-center justify-between">
-          <h2 className="text-md font-bold text-black dark:text-white">
-            Calendrier des jours roulés
-          </h2>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-md font-bold text-black dark:text-white">
+              Calendrier des jours roulés
+            </h2>
+            {values === undefined ? (
+              <Skeleton size="sm" variant="text" width="w-[200px]" />
+            ) : (
+              values.maxActiveDaysInARow && (
+                <p className="text-sm text-black dark:text-white">
+                  <span className="text-emerald-500 dark:text-emerald-300">
+                    {values.maxActiveDaysInARow} jours
+                  </span>{' '}
+                  à la suite
+                </p>
+              )
+            )}
+          </div>
           <Button
             disabled={!values || downloading}
             Icon={ArrowDownTrayIcon}

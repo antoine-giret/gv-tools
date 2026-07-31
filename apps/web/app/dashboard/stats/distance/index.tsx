@@ -8,6 +8,7 @@ import { TValues } from '../types';
 
 import { DistanceChart } from './chart';
 import { DistanceExport } from './export';
+import { DistanceHeader } from './header';
 
 export function Distance({
   exported,
@@ -34,9 +35,7 @@ export function Distance({
     <>
       <div className="flex flex-col gap-6">
         <div className="flex gap-6 items-center justify-between">
-          <h2 className="text-md font-bold text-black dark:text-white">
-            {period.type === 'year' ? 'Distance parcourue par mois' : 'Distance parcourue par jour'}
-          </h2>
+          <DistanceHeader period={period} values={values} />
           <Button
             disabled={!values || downloading}
             Icon={ArrowDownTrayIcon}

@@ -1,7 +1,6 @@
 import { TPeriod } from '@repo/models';
 import { Ref } from 'react';
 
-import { Days } from '../days';
 import { ExportLayout } from '../layouts/export';
 import { statsMap, TValues } from '../types';
 
@@ -32,7 +31,7 @@ export function CalendarExport({
   return (
     <ExportLayout ref={ref} subtitle={subtitle} title={title}>
       <div className="w-full shrink-0 flex items-center gap-[50px]">
-        <ActiveDaysIcon className="text-white" height={150} width={150} />
+        <ActiveDaysIcon className="text-white" height={100} width={100} />
         <div className="flex flex-col gap-[15px]">
           <span className="text-7xl font-extrabold text-white">
             {formatActiveDays(values.activeDays)}
@@ -46,12 +45,9 @@ export function CalendarExport({
           </span>
         </div>
       </div>
-      <div className="w-full grow flex flex-col gap-[50px]">
-        <div className="flex flex-col gap-6">
-          <h2 className="text-md font-bold text-white">Calendrier des jours roulés</h2>
-          <Calendar exported period={period} values={values} />
-        </div>
-        <Days exported values={values} />
+      <div className="w-full flex flex-col gap-[50px]">
+        <h2 className="text-3xl font-bold text-white">Calendrier des jours roulés</h2>
+        <Calendar exported period={period} values={values} />
       </div>
     </ExportLayout>
   );
