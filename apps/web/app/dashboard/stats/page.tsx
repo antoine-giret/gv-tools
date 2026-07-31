@@ -140,10 +140,10 @@ export default function StatsPage() {
 
   return (
     <PrivatePage>
-      <div className="flex flex-col items-stretch gap-12">
+      <div className="flex flex-col items-stretch gap-12 @container">
         <div className="flex flex-col gap-6">
           <h1 className="text-lg font-bold">Mes statistiques</h1>
-          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-6 items-stretch sm:items-center md:items-stretch lg:items-center justify-between">
+          <div className="flex flex-col @2xl:flex-row gap-6 items-stretch @2xl:items-center justify-between">
             <PeriodSelector period={period} setPeriod={setPeriod} />
             <div className="flex justify-end">
               <Button
@@ -164,7 +164,7 @@ export default function StatsPage() {
         />
         <Distance period={period} values={values} />
         {period.type !== 'week' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-12">
             {period.type === 'year' && <DaysCalendar period={period} values={values} />}
             <Days values={values} />
           </div>
