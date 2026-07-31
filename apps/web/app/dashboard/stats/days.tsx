@@ -28,8 +28,24 @@ export function Days({ exported, values }: { exported?: boolean; values: TValues
   );
 
   return (
-    <div className={`flex flex-col gap-6 ${exported ? 'dark' : ''}`}>
-      <h2 className="text-md font-bold text-black dark:text-white">Jours préférés pour pédaler</h2>
+    <div className={`flex flex-col ${exported ? 'dark gap-[50px]' : 'gap-6'}`}>
+      <div className={`flex flex-col ${exported ? 'dark gap-[10px]' : 'gap-1'}`}>
+        <h2 className={`${exported ? 'text-3xl' : 'text-md'} font-bold text-black dark:text-white`}>
+          Jour préféré pour pédaler
+        </h2>
+        {!exported && bestWeekDayDistance === undefined ? (
+          <Skeleton size="sm" variant="text" width="w-[200px]" />
+        ) : (
+          bestWeekDayDistance && (
+            <p className={`${exported ? 'text-2xl' : 'text-sm'} text-black dark:text-white`}>
+              <span className="text-emerald-500 dark:text-emerald-300">
+                {formatDistance(bestWeekDayDistance)} kms
+              </span>{' '}
+              le {weekDaysMap[bestWeekDayIndex].label}
+            </p>
+          )
+        )}
+      </div>
       <div className="w-full grid grid-cols-7 gap-6">
         {weekDays.map((index) => {
           const { shortLabel } = weekDaysMap[index];

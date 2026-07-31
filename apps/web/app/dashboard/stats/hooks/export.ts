@@ -38,7 +38,7 @@ export function useExport({
 
     async function download(ref: HTMLDivElement) {
       try {
-        const canvas = await html2canvas(ref, { scale: 1, width: 1012 });
+        const canvas = await html2canvas(ref, { scale: 1, width: 1080 });
 
         const blob = await new Promise<Blob>((resolve, reject) => {
           try {

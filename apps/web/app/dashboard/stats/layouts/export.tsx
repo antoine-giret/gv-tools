@@ -13,7 +13,7 @@ export function ExportLayout({
 }) {
   return (
     <div
-      className="absolute top-[100%] flex flex-col items-center justify-between gap-[100px] h-[1350px] w-[1012px] px-[100px] py-[50px] bg-slate-900"
+      className="absolute top-[100%] flex flex-col items-center justify-between gap-[100px] h-[1920px] w-[1080px] px-[100px] py-[250px] bg-slate-900"
       ref={ref}
     >
       <div className="flex flex-col gap-[25px] items-center">

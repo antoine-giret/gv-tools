@@ -6,6 +6,7 @@ import { ExportLayout } from '../layouts/export';
 import { statsMap, TValues, weekDays, weekDaysMap } from '../types';
 
 import { DistanceChart } from './chart';
+import { DistanceHeader } from './header';
 
 const {
   distance: {
@@ -80,7 +81,7 @@ export function DistanceExport({
   return (
     <ExportLayout ref={ref} subtitle={subtitle} title={title}>
       <div className="w-full shrink-0 flex items-center gap-[50px]">
-        <DistanceIcon className="text-white" height={150} width={150} />
+        <DistanceIcon className="text-white" height={100} width={100} />
         <div className="flex flex-col gap-[15px]">
           <span className="text-7xl font-extrabold text-white">
             {formatDistance(values.distance)}
@@ -97,14 +98,24 @@ export function DistanceExport({
           </span>
         </div>
       </div>
-      {period.type === 'month' && (
-        <div className="w-full grow flex flex-col gap-[50px]">
-          <div className="flex flex-col gap-6">
-            <h2 className="text-md font-bold text-white">Distance parcourue par jour</h2>
+      {period.type === 'month' ? (
+        <div className="w-full grow flex flex-col gap-[100px]">
+          <div className="flex flex-col gap-[50px]">
+            <DistanceHeader exported period={period} values={values} />
             <DistanceChart exported period={period} setReady={setReady} values={values} />
           </div>
-          {<Days exported values={values} />}
+          <Days exported values={values} />
         </div>
+      ) : (
+        period.type === 'year' && (
+          <div className="w-full grow flex flex-col gap-[100px]">
+            <div className="flex flex-col gap-[50px]">
+              <h2 className="text-3xl font-bold text-white">Distance parcourue par mois</h2>
+              <DistanceChart exported period={period} setReady={setReady} values={values} />
+            </div>
+            <Days exported values={values} />
+          </div>
+        )
       )}
     </ExportLayout>
   );
