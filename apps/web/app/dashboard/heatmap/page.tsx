@@ -2,7 +2,8 @@
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { TPeriodType } from '@repo/models';
-import { useContext, useEffect, useState } from 'react';
+import { LngLatBounds } from 'maplibre-gl';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
 import { UserContext } from '../../context';
@@ -12,12 +13,13 @@ import { getInitialPeriod } from '../../utils/period';
 import { useExport } from '../stats/hooks/export';
 
 import { HeatmapExport } from './export';
-import { Map } from './map';
+import { Map, TMapRef } from './map';
 
 export default function HeatmapPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
   const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
   const [downloading, setDownloading] = useState(false);
+  const [mapToDownloadBounds, seMapToDownloadBounds] = useState<LngLatBounds | undefined>();
   const [mapReady, setMapReady] = useState(false);
   const { signedInUser } = useContext(UserContext);
   const {
@@ -25,6 +27,7 @@ export default function HeatmapPage() {
     subtitle: exportSubtitle,
     setExportRef,
   } = useExport({ ready: mapReady, title: 'heatmap', period, setDownloading });
+  const mapRef = useRef<TMapRef>(null);
 
   useEffect(() => {
     return () => setMapReady(false);
@@ -54,16 +57,20 @@ export default function HeatmapPage() {
                   }
                   Icon={ArrowDownTrayIcon}
                   label="Télécharger"
-                  onClick={() => setDownloading(true)}
+                  onClick={() => {
+                    seMapToDownloadBounds(mapRef.current?.getBounds());
+                    setDownloading(true);
+                  }}
                 />
               </div>
             </div>
           </div>
-          <Map mapId="heatmap" tracesCollection={tracesCollection} />
+          <Map mapId="heatmap" ref={mapRef} tracesCollection={tracesCollection} />
         </div>
       </PrivatePage>
       {tracesCollection && downloading && (
         <HeatmapExport
+          initialBounds={mapToDownloadBounds}
           mapId="exported-heatmap"
           ref={setExportRef}
           setReady={setMapReady}
