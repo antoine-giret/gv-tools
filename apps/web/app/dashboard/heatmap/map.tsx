@@ -1,25 +1,38 @@
 'use client';
 
-import { GeoJSONSource, Map as MaplibreMap } from 'maplibre-gl';
-import { useEffect, useRef, useState } from 'react';
+import { GeoJSONSource, LngLatBounds, Map as MaplibreMap, PaddingOptions } from 'maplibre-gl';
+import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { getBounds } from '../../utils/map';
 
 const sourceId = 'traces';
 
-export function Map({
-  exported,
-  mapId,
-  tracesCollection,
-  setReady,
-}: {
-  exported?: boolean;
-  mapId: string;
-  setReady?: (ready: boolean) => void;
-  tracesCollection: GeoJSON.FeatureCollection<GeoJSON.LineString> | undefined;
-}) {
+export type TMapRef = {
+  getBounds: () => LngLatBounds | undefined;
+};
+
+function MapRender(
+  {
+    exported,
+    mapId,
+    initialBounds,
+    padding,
+    tracesCollection,
+    setReady,
+  }: {
+    exported?: boolean;
+    initialBounds?: LngLatBounds;
+    mapId: string;
+    padding?: number | PaddingOptions;
+    setReady?: (ready: boolean) => void;
+    tracesCollection: GeoJSON.FeatureCollection<GeoJSON.LineString> | undefined;
+  },
+  ref: Ref<TMapRef>,
+) {
   const [mapInitialized, setMapInitialized] = useState(false);
   const mapRef = useRef<MaplibreMap>(null);
+
+  useImperativeHandle(ref, () => ({ getBounds: () => mapRef.current?.getBounds() }));
 
   useEffect(() => {
     function initMap() {
@@ -27,8 +40,8 @@ export function Map({
         mapRef.current = new MaplibreMap({
           container: mapId,
           style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-          bounds: [-4.8146088, 42.3333482, 8.172476, 51.074681],
-          fitBoundsOptions: { padding: 50 },
+          bounds: initialBounds ?? [-4.8146088, 42.3333482, 8.172476, 51.074681],
+          fitBoundsOptions: { padding: padding ?? 50 },
           canvasContextAttributes: {
             preserveDrawingBuffer: exported,
           },
@@ -91,13 +104,15 @@ export function Map({
       const source = mapRef.current?.getSource(sourceId);
       if (source && source instanceof GeoJSONSource) {
         await source.setData(collection, true);
-        const bounds = getBounds(collection);
-        if (bounds)
-          mapRef.current?.fitBounds(bounds, {
-            padding: 50,
-            animate: exported ? false : true,
-            maxDuration: 1000,
-          });
+        if (!initialBounds) {
+          const bounds = getBounds(collection);
+          if (bounds)
+            mapRef.current?.fitBounds(bounds, {
+              padding: 50,
+              animate: exported ? false : true,
+              maxDuration: 1000,
+            });
+        }
         mapRef.current?.once('idle', () => setReady?.(true));
       }
     }
@@ -122,3 +137,5 @@ export function Map({
     </div>
   );
 }
+
+export const Map = forwardRef(MapRender);
