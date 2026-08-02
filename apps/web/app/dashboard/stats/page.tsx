@@ -5,6 +5,7 @@ import { TPeriod, TPeriodType } from '@repo/models';
 import { useContext, useMemo, useState } from 'react';
 
 import { Button, PeriodSelector } from '../../components';
+import { EmptyState } from '../../components/empty-state';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
 import { TStatsData, useStats } from '../../hooks/queries/use-stats';
@@ -137,6 +138,7 @@ export default function StatsPage() {
   const prevValues = useMemo<TValues | undefined>(() => {
     return prevData && parseStats({ period: prevPeriod, data: prevData });
   }, [prevPeriod, prevData]);
+  const isEmpty = useMemo(() => values && values.distance === 0, [values]);
 
   return (
     <PrivatePage>
@@ -145,29 +147,37 @@ export default function StatsPage() {
           <h1 className="text-lg font-bold">Mes statistiques</h1>
           <div className="flex flex-col @2xl:flex-row gap-6 items-stretch @2xl:items-center justify-between">
             <PeriodSelector period={period} setPeriod={setPeriod} />
-            <div className="flex justify-end">
-              <Button
-                disabled={!values || downloading}
-                Icon={ArrowDownTrayIcon}
-                label="Télécharger"
-                onClick={() => setDownloading(true)}
-              />
-            </div>
+            {(!values || !isEmpty) && (
+              <div className="flex justify-end">
+                <Button
+                  disabled={!values || downloading}
+                  Icon={ArrowDownTrayIcon}
+                  label="Télécharger"
+                  onClick={() => setDownloading(true)}
+                />
+              </div>
+            )}
           </div>
         </div>
-        <GlobalStats
-          downloading={downloading}
-          period={period}
-          prevValues={prevValues}
-          setDownloading={setDownloading}
-          values={values}
-        />
-        <Distance period={period} values={values} />
-        {period.type !== 'week' && (
-          <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-12">
-            {period.type === 'year' && <DaysCalendar period={period} values={values} />}
-            <Days values={values} />
-          </div>
+        {isEmpty ? (
+          <EmptyState period={period} />
+        ) : (
+          <>
+            <GlobalStats
+              downloading={downloading}
+              period={period}
+              prevValues={prevValues}
+              setDownloading={setDownloading}
+              values={values}
+            />
+            <Distance period={period} values={values} />
+            {period.type !== 'week' && (
+              <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-12">
+                {period.type === 'year' && <DaysCalendar period={period} values={values} />}
+                <Days values={values} />
+              </div>
+            )}
+          </>
         )}
       </div>
     </PrivatePage>
