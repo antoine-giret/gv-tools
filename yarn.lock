@@ -3281,6 +3281,11 @@ graceful-fs@^4.2.4:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
 
+h3-js@4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/h3-js/-/h3-js-4.5.0.tgz#7866812ef3b6432652ee0ace74a527572f6644c5"
+  integrity sha512-uKmdPc+DuarnR+XqZxEuWOMw7KzzKROrx3MLeJpFnMOs78S9M5eZ+X5RieS9UcSFQqbeXzbfWuX/W9Pyajinqw==
+
 has-bigints@^1.0.2:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/has-bigints/-/has-bigints-1.1.0.tgz#28607e965ac967e03cd2a2c70a2636a1edad49fe"

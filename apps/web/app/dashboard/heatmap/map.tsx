@@ -3,9 +3,15 @@
 import { GeoJSONSource, LngLatBounds, Map as MaplibreMap, PaddingOptions } from 'maplibre-gl';
 import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
+import { getH3FeatureCollection } from '../../utils/h3';
 import { getBounds } from '../../utils/map';
 
-const sourceId = 'traces';
+import { TLayer } from './types';
+
+const tracesSourceId = 'traces';
+const tracesLayerId = 'traces';
+const tilesSourceId = 'tiles';
+const tilesLayerId = 'tiles';
 
 export type TMapRef = {
   getBounds: () => LngLatBounds | undefined;
@@ -18,12 +24,14 @@ function MapRender(
     initialBounds,
     padding,
     tracesCollection,
+    selectedLayers,
     setReady,
   }: {
     exported?: boolean;
     initialBounds?: LngLatBounds;
     mapId: string;
     padding?: number | PaddingOptions;
+    selectedLayers: TLayer[];
     setReady?: (ready: boolean) => void;
     tracesCollection: GeoJSON.FeatureCollection<GeoJSON.LineString> | undefined;
   },
@@ -49,11 +57,18 @@ function MapRender(
       }
     }
 
-    function initSource() {
+    function initSources() {
       if (!mapRef.current) return;
 
-      if (!mapRef.current.getSource(sourceId)) {
-        mapRef.current.addSource(sourceId, {
+      if (!mapRef.current.getSource(tracesSourceId)) {
+        mapRef.current.addSource(tracesSourceId, {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        });
+      }
+
+      if (!mapRef.current.getSource(tilesSourceId)) {
+        mapRef.current.addSource(tilesSourceId, {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
         });
@@ -65,10 +80,27 @@ function MapRender(
 
       mapRef.current.addLayer(
         {
-          id: 'traces',
-          type: 'line',
-          source: sourceId,
+          id: tilesLayerId,
+          type: 'fill',
+          source: tilesSourceId,
           layout: {
+            visibility: selectedLayers.includes('tiles') ? 'visible' : 'none',
+          },
+          paint: {
+            'fill-color': '#00bc7d',
+            'fill-opacity': 0.5,
+          },
+        },
+        'waterway_label',
+      );
+
+      mapRef.current.addLayer(
+        {
+          id: tracesLayerId,
+          type: 'line',
+          source: tracesSourceId,
+          layout: {
+            visibility: selectedLayers.includes('traces') ? 'visible' : 'none',
             'line-join': 'round',
             'line-cap': 'round',
           },
@@ -78,12 +110,12 @@ function MapRender(
             'line-width': 5,
           },
         },
-        'waterway_label',
+        tilesLayerId,
       );
     }
 
     function handleLoad() {
-      initSource();
+      initSources();
       initLayers();
       setMapInitialized(true);
     }
@@ -101,31 +133,60 @@ function MapRender(
 
   useEffect(() => {
     async function updateSource(collection: GeoJSON.FeatureCollection<GeoJSON.LineString>) {
-      const source = mapRef.current?.getSource(sourceId);
-      if (source && source instanceof GeoJSONSource) {
-        await source.setData(collection, true);
-        if (!initialBounds) {
-          const bounds = getBounds(collection);
-          if (bounds)
-            mapRef.current?.fitBounds(bounds, {
-              padding: 50,
-              animate: exported ? false : true,
-              maxDuration: 1000,
-            });
-        }
-        mapRef.current?.once('idle', () => setReady?.(true));
+      const tracesSource = mapRef.current?.getSource(tracesSourceId);
+      if (tracesSource && tracesSource instanceof GeoJSONSource) {
+        await tracesSource.setData(collection, true);
       }
+
+      const tilesSource = mapRef.current?.getSource(tilesSourceId);
+      if (tilesSource && tilesSource instanceof GeoJSONSource) {
+        const h3Collection = getH3FeatureCollection({ collection });
+        await tilesSource.setData(h3Collection, true);
+      }
+
+      if (!initialBounds) {
+        const bounds = getBounds(collection);
+        if (bounds)
+          mapRef.current?.fitBounds(bounds, {
+            padding: 50,
+            animate: exported ? false : true,
+            maxDuration: 1000,
+          });
+      }
+
+      mapRef.current?.once('idle', () => setReady?.(true));
     }
 
     if (mapInitialized && tracesCollection) updateSource(tracesCollection);
 
     return () => {
-      const source = mapRef.current?.getSource(sourceId);
-      if (source && source instanceof GeoJSONSource) {
-        source.setData({ type: 'FeatureCollection', features: [] });
+      const tracesSource = mapRef.current?.getSource(tracesSourceId);
+      if (tracesSource && tracesSource instanceof GeoJSONSource) {
+        tracesSource.setData({ type: 'FeatureCollection', features: [] });
+      }
+
+      const tilesSource = mapRef.current?.getSource(tilesSourceId);
+      if (tilesSource && tilesSource instanceof GeoJSONSource) {
+        tilesSource.setData({ type: 'FeatureCollection', features: [] });
       }
     };
   }, [mapInitialized, tracesCollection]);
+
+  useEffect(() => {
+    if (mapInitialized) {
+      mapRef.current?.setLayoutProperty(
+        tracesLayerId,
+        'visibility',
+        selectedLayers.includes('traces') ? 'visible' : 'none',
+      );
+
+      mapRef.current?.setLayoutProperty(
+        tilesLayerId,
+        'visibility',
+        selectedLayers.includes('tiles') ? 'visible' : 'none',
+      );
+    }
+  }, [mapInitialized, selectedLayers]);
 
   return (
     <div className="grow relative" id={mapId}>
