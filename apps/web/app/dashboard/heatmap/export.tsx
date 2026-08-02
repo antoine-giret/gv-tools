@@ -2,6 +2,7 @@ import { LngLatBounds } from 'maplibre-gl';
 import { Ref } from 'react';
 
 import { Map } from './map';
+import { TLayer } from './types';
 
 export function HeatmapExport({
   initialBounds,
@@ -10,6 +11,7 @@ export function HeatmapExport({
   subtitle,
   mapId,
   tracesCollection,
+  selectedLayers,
   setReady,
 }: {
   initialBounds: LngLatBounds | undefined;
@@ -18,6 +20,7 @@ export function HeatmapExport({
   subtitle: string;
   title: string;
   tracesCollection: GeoJSON.FeatureCollection<GeoJSON.LineString>;
+  selectedLayers: TLayer[];
   setReady?: (ready: boolean) => void;
 }) {
   return (
@@ -28,6 +31,7 @@ export function HeatmapExport({
           initialBounds={initialBounds}
           mapId={mapId}
           padding={{ top: 525, left: 100, right: 100, bottom: 100 }}
+          selectedLayers={selectedLayers}
           setReady={setReady}
           tracesCollection={tracesCollection}
         />
