@@ -8,7 +8,7 @@ export function getH3FeatureCollection({
   const h3Indexes = [
     ...new Set(
       collection.features.flatMap(({ geometry: { coordinates } }) =>
-        coordinates.flatMap(([lng, lat]) => latLngToCell(lat, lng, 7)),
+        coordinates.flatMap(([lng, lat]) => latLngToCell(lat, lng, 8)),
       ),
     ),
   ];
