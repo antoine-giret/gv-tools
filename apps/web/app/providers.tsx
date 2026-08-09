@@ -53,7 +53,7 @@ function LocalStorageProvider({
 
   useEffect(() => {
     if (userData && authData) {
-      const { id, username, profile_picture } = userData;
+      const { id, username, profile_picture, created } = userData;
       const { authorizationToken } = authData;
 
       try {
@@ -70,6 +70,7 @@ function LocalStorageProvider({
         profilePicture: profile_picture
           ? `${process.env.NEXT_PUBLIC_GV_BACKEND_URL}${profile_picture}`
           : null,
+        created: new Date(created),
       });
     } else if (authData === null) {
       try {

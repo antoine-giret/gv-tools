@@ -2,6 +2,7 @@ import { TPeriod } from '@repo/models';
 import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from 'chart.js';
 import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef } from 'react';
+import { match } from 'ts-pattern';
 
 import { months, statsMap, TValues, weekDays } from '../types';
 
@@ -33,10 +34,18 @@ export function DistanceChart({
     const ctx = document.getElementById(chartId);
     if (ctx && ctx instanceof HTMLCanvasElement) {
       const { type: periodType, startDate, endDate } = period;
+      const firstYear = period.startDate.getFullYear();
+      const currentYear = new Date().getFullYear();
+      const years = new Array(currentYear - firstYear + 1)
+        .fill(null)
+        .map((_, index) => firstYear + index);
       let labels: string[] = [];
       let tooltipLabels: string[] = [];
 
-      if (periodType === 'year') {
+      if (periodType === 'allTime') {
+        labels = years.map((year) => `${year}`);
+        tooltipLabels = years.map((year) => `${year}`);
+      } else if (periodType === 'year') {
         const year = startDate.getFullYear();
         labels = months.map((month) =>
           new Intl.DateTimeFormat('fr', { month: 'short' }).format(new Date(year, month, 1)),
@@ -49,37 +58,40 @@ export function DistanceChart({
       } else {
         const currentDay = new Date(startDate);
         while (currentDay.getTime() <= endDate.getTime()) {
-          labels.push(
-            new Intl.DateTimeFormat(
-              'fr',
-              periodType === 'week'
-                ? {
-                    weekday: 'long',
-                  }
-                : {
-                    weekday: 'short',
-                    day: 'numeric',
-                  },
-            ).format(currentDay),
-          );
+          match(periodType)
+            .with('month', () => {
+              labels.push(
+                new Intl.DateTimeFormat('fr', {
+                  weekday: 'short',
+                  day: 'numeric',
+                }).format(currentDay),
+              );
 
-          tooltipLabels.push(
-            new Intl.DateTimeFormat(
-              'fr',
-              periodType === 'week'
-                ? {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  }
-                : {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                  },
-            ).format(currentDay),
-          );
+              tooltipLabels.push(
+                new Intl.DateTimeFormat('fr', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                }).format(currentDay),
+              );
+            })
+            .with('week', () => {
+              labels.push(
+                new Intl.DateTimeFormat('fr', {
+                  weekday: 'long',
+                }).format(currentDay),
+              );
+
+              tooltipLabels.push(
+                new Intl.DateTimeFormat('fr', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }).format(currentDay),
+              );
+            })
+            .exhaustive();
 
           currentDay.setDate(currentDay.getDate() + 1);
         }
@@ -92,11 +104,12 @@ export function DistanceChart({
           datasets: [
             {
               data: values
-                ? period.type === 'week'
-                  ? weekDays.map((index) => values.distancesByWeekDays[index])
-                  : period.type === 'month'
-                    ? values.distancesByDays
-                    : values.distancesByMonth
+                ? match(periodType)
+                    .with('week', () => weekDays.map((index) => values.distancesByWeekDays[index]))
+                    .with('month', () => values.distancesByDays)
+                    .with('year', () => values.distancesByMonth)
+                    .with('allTime', () => years.map((year) => values.distancesByYears[year] ?? 0))
+                    .exhaustive()
                 : [],
               label: 'Distance roulée',
               backgroundColor: '#5ee9b5',
@@ -168,12 +181,18 @@ export function DistanceChart({
 
   useEffect(() => {
     if (chartRef.current && values) {
-      chartRef.current.data.datasets[0].data =
-        period.type === 'week'
-          ? weekDays.map((index) => values.distancesByWeekDays[index])
-          : period.type === 'month'
-            ? values.distancesByDays
-            : values.distancesByMonth;
+      const firstYear = period.startDate.getFullYear();
+      const currentYear = new Date().getFullYear();
+      const years = new Array(currentYear - firstYear + 1)
+        .fill(null)
+        .map((_, index) => firstYear + index);
+
+      chartRef.current.data.datasets[0].data = match(period.type)
+        .with('week', () => weekDays.map((index) => values.distancesByWeekDays[index]))
+        .with('month', () => values.distancesByDays)
+        .with('year', () => values.distancesByMonth)
+        .with('allTime', () => years.map((year) => values.distancesByYears[year] ?? 0))
+        .exhaustive();
       chartRef.current.update();
     }
 

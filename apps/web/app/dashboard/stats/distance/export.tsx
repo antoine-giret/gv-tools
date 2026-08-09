@@ -1,5 +1,6 @@
 import { TPeriod } from '@repo/models';
 import { Ref, useMemo } from 'react';
+import { match } from 'ts-pattern';
 
 import { Days } from '../days';
 import { ExportLayout } from '../layouts/export';
@@ -36,46 +37,64 @@ export function DistanceExport({
     let bestIndex = 0;
     let bestDistance = 0;
 
-    if (period.type === 'week') {
-      weekDays.forEach((index) => {
-        const distance = values.distancesByWeekDays[index];
-        if (distance > bestDistance) {
-          bestIndex = index;
-          bestDistance = distance;
-        }
-      });
+    return match(period.type)
+      .with('week', () => {
+        weekDays.forEach((index) => {
+          const distance = values.distancesByWeekDays[index];
+          if (distance > bestDistance) {
+            bestIndex = index;
+            bestDistance = distance;
+          }
+        });
 
-      return {
-        label: weekDaysMap[bestIndex].label,
-        distance: bestDistance,
-      };
-    }
+        return {
+          label: weekDaysMap[bestIndex].label,
+          distance: bestDistance,
+        };
+      })
+      .with('month', () => {
+        values.distancesByDays.forEach((distance, index) => {
+          if (distance > bestDistance) {
+            bestIndex = index;
+            bestDistance = distance;
+          }
+        });
 
-    if (period.type === 'month') {
-      values.distancesByDays.forEach((distance, index) => {
-        if (distance > bestDistance) {
-          bestIndex = index;
-          bestDistance = distance;
-        }
-      });
+        return {
+          label: `le ${new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'long' }).format(new Date(period.startDate.getFullYear(), period.startDate.getMonth(), bestIndex + 1))}`,
+          distance: bestDistance,
+        };
+      })
+      .with('year', () => {
+        values.distancesByMonth.forEach((distance, index) => {
+          if (distance > bestDistance) {
+            bestIndex = index;
+            bestDistance = distance;
+          }
+        });
 
-      return {
-        label: `le ${new Intl.DateTimeFormat('fr', { day: 'numeric', month: 'long' }).format(new Date(period.startDate.getFullYear(), period.startDate.getMonth(), bestIndex + 1))}`,
-        distance: bestDistance,
-      };
-    }
+        return {
+          label: `en ${new Intl.DateTimeFormat('fr', { month: 'long' }).format(new Date(period.startDate.getFullYear(), bestIndex, 1))}`,
+          distance: bestDistance,
+        };
+      })
+      .with('allTime', () => {
+        let bestYear = 1970;
 
-    values.distancesByMonth.forEach((distance, index) => {
-      if (distance > bestDistance) {
-        bestIndex = index;
-        bestDistance = distance;
-      }
-    });
+        Object.entries(values.distancesByYears).forEach(([_year, distance]) => {
+          const year = parseInt(_year);
+          if (distance > bestDistance) {
+            bestYear = year;
+            bestDistance = distance;
+          }
+        });
 
-    return {
-      label: `en ${new Intl.DateTimeFormat('fr', { month: 'long' }).format(new Date(period.startDate.getFullYear(), bestIndex, 1))}`,
-      distance: bestDistance,
-    };
+        return {
+          label: `en ${bestYear}`,
+          distance: bestDistance,
+        };
+      })
+      .exhaustive();
   }, [period, values]);
 
   return (
@@ -89,7 +108,7 @@ export function DistanceExport({
               {distanceUnit} {distanceLabel}
             </span>
           </span>
-          <span className="text-4xl text-white/80">
+          <span className="shrink-0 text-4xl text-white/80">
             dont{' '}
             <span className="text-emerald-300 font-bold">
               {formatDistance(bestPeriod.distance)} {distanceUnit}
@@ -106,11 +125,19 @@ export function DistanceExport({
           </div>
           <Days exported values={values} />
         </div>
+      ) : period.type === 'year' ? (
+        <div className="w-full grow flex flex-col gap-[100px]">
+          <div className="flex flex-col gap-[50px]">
+            <h2 className="text-3xl font-bold text-white">Distance parcourue par mois</h2>
+            <DistanceChart exported period={period} setReady={setReady} values={values} />
+          </div>
+          <Days exported values={values} />
+        </div>
       ) : (
-        period.type === 'year' && (
+        period.type === 'allTime' && (
           <div className="w-full grow flex flex-col gap-[100px]">
             <div className="flex flex-col gap-[50px]">
-              <h2 className="text-3xl font-bold text-white">Distance parcourue par mois</h2>
+              <h2 className="text-3xl font-bold text-white">Distance parcourue par année</h2>
               <DistanceChart exported period={period} setReady={setReady} values={values} />
             </div>
             <Days exported values={values} />

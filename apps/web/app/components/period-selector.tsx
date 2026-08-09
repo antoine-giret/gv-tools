@@ -6,8 +6,10 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/solid';
 import { periodTypes as defaultPeriodTypes, TPeriod, TPeriodType } from '@repo/models';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
+import { match } from 'ts-pattern';
 
+import { UserContext } from '../context';
 import { getInitialPeriod } from '../utils/period';
 
 import { IconButton } from './icon-button';
@@ -18,6 +20,7 @@ const periodTypesLabels: { [key in TPeriodType]: string } = {
   month: 'Par mois',
   week: 'Par semaine',
   year: 'Par an',
+  allTime: 'Depuis le début',
 };
 
 const now = new Date();
@@ -31,6 +34,7 @@ export function PeriodSelector({
   periodTypes?: TPeriodType[];
   setPeriod: (period: TPeriod) => void;
 }) {
+  const { signedInUser } = useContext(UserContext);
   const [periodTypes] = useState(customPeriodTypes || defaultPeriodTypes);
   const [periodType, setPeriodType] = useState<TPeriodType>('month');
   const [periodTypesOptions] = useState<Array<{ label: string; value: TPeriodType }>>(
@@ -49,58 +53,56 @@ export function PeriodSelector({
     );
   }, [startAndEndDateDuringSameYear, period]);
   const prevPeriod = useMemo(() => {
+    if (!signedInUser || periodType === 'allTime') return null;
+
     const { startDate: _startDate, endDate: _endDate } = period;
     const startDate = new Date(_startDate);
     const endDate = new Date(_endDate);
 
-    switch (periodType) {
-      case 'week':
+    match(periodType)
+      .with('week', () => {
         startDate.setDate(startDate.getDate() - 7);
         endDate.setDate(endDate.getDate() - 7);
-
-        break;
-      case 'month':
+      })
+      .with('month', () => {
         startDate.setMonth(startDate.getMonth() - 1);
         endDate.setMonth(endDate.getMonth() - 1);
-
-        break;
-      case 'year':
+      })
+      .with('year', () => {
         startDate.setFullYear(startDate.getFullYear() - 1);
         endDate.setFullYear(endDate.getFullYear() - 1);
+      })
+      .exhaustive();
 
-        break;
-      default:
-        break;
-    }
+    const firstDate = new Date(signedInUser.created);
+    firstDate.setMonth(0, 1);
+    firstDate.setHours(0, 0, 0, 0);
 
-    if (startDate.getTime() < new Date(2020, 0, 1, 0, 0, 0, 0).getTime()) return null;
+    if (startDate.getTime() < firstDate.getTime()) return null;
 
     return { type: periodType, startDate, endDate };
-  }, [periodType, period]);
+  }, [signedInUser, periodType, period]);
   const nextPeriod = useMemo(() => {
+    if (periodType === 'allTime') return null;
+
     const { startDate: _startDate, endDate: _endDate } = period;
     const startDate = new Date(_startDate);
     const endDate = new Date(_endDate);
 
-    switch (periodType) {
-      case 'week':
+    match(periodType)
+      .with('week', () => {
         startDate.setDate(startDate.getDate() + 7);
         endDate.setDate(endDate.getDate() + 7);
-
-        break;
-      case 'month':
+      })
+      .with('month', () => {
         startDate.setMonth(startDate.getMonth() + 1);
         endDate.setMonth(endDate.getMonth() + 1);
-
-        break;
-      case 'year':
+      })
+      .with('year', () => {
         startDate.setFullYear(startDate.getFullYear() + 1);
         endDate.setFullYear(endDate.getFullYear() + 1);
-
-        break;
-      default:
-        break;
-    }
+      })
+      .exhaustive();
 
     if (startDate.getTime() > new Date().getTime()) return null;
 
@@ -120,139 +122,153 @@ export function PeriodSelector({
   return (
     <div className="flex items-center gap-6">
       {!disablePeriodTypeSelector && (
-        <div className="w-32">
+        <div className="w-40">
           <Select
             id="periodType"
             onChange={(type) => {
-              setPeriodType(type);
-              setPeriod(getInitialPeriod(type));
+              if (type === 'allTime') {
+                if (!signedInUser) return;
+
+                const startDate = new Date(signedInUser.created);
+                const endDate = new Date();
+                startDate.setHours(12, 0, 0, 0);
+                endDate.setHours(12, 0, 0, 0);
+
+                setPeriodType(type);
+                setPeriod({ type: 'allTime', startDate, endDate });
+              } else {
+                setPeriodType(type);
+                setPeriod(getInitialPeriod(type));
+              }
             }}
             options={periodTypesOptions}
             value={periodType}
           />
         </div>
       )}
-      <div className="flex items-center gap-3">
-        {periodType === 'week' ? (
-          <>
-            <div className="flex items-center gap-1">
-              <Tooltip label="Semaine précédente" position="bottom">
-                <IconButton
-                  disabled={!prevPeriod}
-                  Icon={ChevronLeftIcon}
-                  label="Semaine précédente"
-                  onClick={displayPrevPeriod}
-                />
-              </Tooltip>
-              <Tooltip label="Semaine suivante" position="bottom">
-                <IconButton
-                  disabled={!nextPeriod}
-                  Icon={ChevronRightIcon}
-                  label="Semaine suivante"
-                  onClick={displayNextPeriod}
-                />
-              </Tooltip>
-              <Tooltip label="Revenir à la semaine courante" position="bottom">
-                <IconButton
-                  disabled={isCurrentPeriod}
-                  Icon={ChevronDoubleRightIcon}
-                  label="Revenir à la semaine courante"
-                  onClick={() => setPeriod(getInitialPeriod(periodType))}
-                />
-              </Tooltip>
-            </div>
-            <span className="text-md">
-              Du{' '}
-              {new Intl.DateTimeFormat('fr', {
-                day: '2-digit',
-                month: startAndEndDateDuringSameMonth ? undefined : 'short',
-                year: startAndEndDateDuringSameYear ? undefined : 'numeric',
-              }).format(startDate)}{' '}
-              au{' '}
-              {new Intl.DateTimeFormat('fr', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              }).format(endDate)}
-            </span>
-          </>
-        ) : periodType === 'month' ? (
-          <>
-            <div className="flex items-center gap-1">
-              <Tooltip label="Mois précédent" position="bottom">
-                <IconButton
-                  disabled={!prevPeriod}
-                  Icon={ChevronLeftIcon}
-                  label="Mois précédent"
-                  onClick={displayPrevPeriod}
-                />
-              </Tooltip>
-              {disablePeriodTypeSelector && (
-                <span className="w-25 text-md text-center capitalize">
+      {periodType !== 'allTime' && (
+        <div className="flex items-center gap-3">
+          {periodType === 'week' ? (
+            <>
+              <div className="flex items-center gap-1">
+                <Tooltip label="Semaine précédente" position="bottom">
+                  <IconButton
+                    disabled={!prevPeriod}
+                    Icon={ChevronLeftIcon}
+                    label="Semaine précédente"
+                    onClick={displayPrevPeriod}
+                  />
+                </Tooltip>
+                <Tooltip label="Semaine suivante" position="bottom">
+                  <IconButton
+                    disabled={!nextPeriod}
+                    Icon={ChevronRightIcon}
+                    label="Semaine suivante"
+                    onClick={displayNextPeriod}
+                  />
+                </Tooltip>
+                <Tooltip label="Revenir à la semaine courante" position="bottom">
+                  <IconButton
+                    disabled={isCurrentPeriod}
+                    Icon={ChevronDoubleRightIcon}
+                    label="Revenir à la semaine courante"
+                    onClick={() => setPeriod(getInitialPeriod('week'))}
+                  />
+                </Tooltip>
+              </div>
+              <span className="text-md">
+                Du{' '}
+                {new Intl.DateTimeFormat('fr', {
+                  day: '2-digit',
+                  month: startAndEndDateDuringSameMonth ? undefined : 'short',
+                  year: startAndEndDateDuringSameYear ? undefined : 'numeric',
+                }).format(startDate)}{' '}
+                au{' '}
+                {new Intl.DateTimeFormat('fr', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                }).format(endDate)}
+              </span>
+            </>
+          ) : periodType === 'month' ? (
+            <>
+              <div className="flex items-center gap-1">
+                <Tooltip label="Mois précédent" position="bottom">
+                  <IconButton
+                    disabled={!prevPeriod}
+                    Icon={ChevronLeftIcon}
+                    label="Mois précédent"
+                    onClick={displayPrevPeriod}
+                  />
+                </Tooltip>
+                {disablePeriodTypeSelector && (
+                  <span className="w-25 text-md text-center capitalize">
+                    {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(
+                      startDate,
+                    )}
+                  </span>
+                )}
+                <Tooltip label="Mois suivant" position="bottom">
+                  <IconButton
+                    disabled={isCurrentPeriod}
+                    Icon={ChevronRightIcon}
+                    label="Mois suivant"
+                    onClick={displayNextPeriod}
+                  />
+                </Tooltip>
+                <Tooltip label="Revenir au mois courant" position="bottom">
+                  <IconButton
+                    disabled={isCurrentPeriod}
+                    Icon={ChevronDoubleRightIcon}
+                    label="Revenir au mois courant"
+                    onClick={() => setPeriod(getInitialPeriod('month'))}
+                  />
+                </Tooltip>
+              </div>
+              {!disablePeriodTypeSelector && (
+                <span className="text-md text-center capitalize">
                   {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(
                     startDate,
                   )}
                 </span>
               )}
-              <Tooltip label="Mois suivant" position="bottom">
-                <IconButton
-                  disabled={isCurrentPeriod}
-                  Icon={ChevronRightIcon}
-                  label="Mois suivant"
-                  onClick={displayNextPeriod}
-                />
-              </Tooltip>
-              <Tooltip label="Revenir au mois courant" position="bottom">
-                <IconButton
-                  disabled={isCurrentPeriod}
-                  Icon={ChevronDoubleRightIcon}
-                  label="Revenir au mois courant"
-                  onClick={() => setPeriod(getInitialPeriod(periodType))}
-                />
-              </Tooltip>
-            </div>
-            {!disablePeriodTypeSelector && (
-              <span className="text-md text-center capitalize">
-                {new Intl.DateTimeFormat('fr', { month: 'short', year: 'numeric' }).format(
-                  startDate,
-                )}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1">
+                <Tooltip label="Année précédente" position="bottom">
+                  <IconButton
+                    disabled={!prevPeriod}
+                    Icon={ChevronLeftIcon}
+                    label="Année précédente"
+                    onClick={displayPrevPeriod}
+                  />
+                </Tooltip>
+                <Tooltip label="Année suivante" position="bottom">
+                  <IconButton
+                    disabled={isCurrentPeriod}
+                    Icon={ChevronRightIcon}
+                    label="Année suivante"
+                    onClick={displayNextPeriod}
+                  />
+                </Tooltip>
+                <Tooltip label="Revenir à l'année courante" position="bottom">
+                  <IconButton
+                    disabled={isCurrentPeriod}
+                    Icon={ChevronDoubleRightIcon}
+                    label="Revenir à l'année courante"
+                    onClick={() => setPeriod(getInitialPeriod('year'))}
+                  />
+                </Tooltip>
+              </div>
+              <span className="text-md">
+                {new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate)}
               </span>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="flex items-center gap-1">
-              <Tooltip label="Année précédente" position="bottom">
-                <IconButton
-                  disabled={!prevPeriod}
-                  Icon={ChevronLeftIcon}
-                  label="Année précédente"
-                  onClick={displayPrevPeriod}
-                />
-              </Tooltip>
-              <Tooltip label="Année suivante" position="bottom">
-                <IconButton
-                  disabled={isCurrentPeriod}
-                  Icon={ChevronRightIcon}
-                  label="Année suivante"
-                  onClick={displayNextPeriod}
-                />
-              </Tooltip>
-              <Tooltip label="Revenir à l'année courante" position="bottom">
-                <IconButton
-                  disabled={isCurrentPeriod}
-                  Icon={ChevronDoubleRightIcon}
-                  label="Revenir à l'année courante"
-                  onClick={() => setPeriod(getInitialPeriod(periodType))}
-                />
-              </Tooltip>
-            </div>
-            <span className="text-md">
-              {new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate)}
-            </span>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -41,6 +41,37 @@ function Header({
   );
 }
 
+function AllTimeHeader({ period, values, exported }: THeader) {
+  const bestYear = useMemo(() => {
+    if (!values) return undefined;
+
+    const currentYear = new Date().getFullYear();
+    const firstYear = period.startDate.getFullYear();
+    const years = new Array(currentYear - firstYear + 1)
+      .fill(null)
+      .map((_, index) => firstYear + index);
+    let _bestYear = firstYear;
+    let bestYearDistance = 0;
+    years.forEach((year) => {
+      const distance = values.distancesByYears[year];
+      if (distance > bestYearDistance) {
+        _bestYear = year;
+        bestYearDistance = distance;
+      }
+    });
+
+    const distance = values.distancesByYears[_bestYear];
+    if (!distance) return null;
+
+    return {
+      label: `en ${_bestYear}`,
+      distance: `${formatDistance(distance)} kms`,
+    };
+  }, [period, values]);
+
+  return <Header bestValue={bestYear} exported={exported} title="Distance parcourue par année" />;
+}
+
 function YearHeader({ period, values, exported }: THeader) {
   const bestMonth = useMemo(() => {
     if (!values) return undefined;
@@ -139,6 +170,7 @@ function WeekHeader({ period, values, exported }: THeader) {
 export function DistanceHeader(props: THeader) {
   if (props.period.type === 'year') return <YearHeader {...props} />;
   if (props.period.type === 'month') return <MonthHeader {...props} />;
+  if (props.period.type === 'allTime') return <AllTimeHeader {...props} />;
 
   return <WeekHeader {...props} />;
 }

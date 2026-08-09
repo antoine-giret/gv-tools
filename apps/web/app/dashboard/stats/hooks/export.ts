@@ -2,6 +2,7 @@ import { TPeriod } from '@repo/models';
 import { saveAs } from 'file-saver';
 import html2canvas from 'html2canvas-pro';
 import { useEffect, useMemo, useState } from 'react';
+import { match } from 'ts-pattern';
 
 export function useExport({
   ready,
@@ -26,11 +27,18 @@ export function useExport({
   const subtitle = useMemo(() => {
     const { type, startDate, endDate } = period;
 
-    return type === 'week'
-      ? `Du ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: startAndEndDateDuringSameMonth ? undefined : 'short', year: startAndEndDateDuringSameYear ? undefined : 'numeric' }).format(startDate)} au ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: 'short', year: 'numeric' }).format(endDate)}`
-      : type === 'month'
-        ? new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(startDate)
-        : new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
+    return match(type)
+      .with(
+        'week',
+        () =>
+          `Du ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: startAndEndDateDuringSameMonth ? undefined : 'short', year: startAndEndDateDuringSameYear ? undefined : 'numeric' }).format(startDate)} au ${new Intl.DateTimeFormat('fr', { day: '2-digit', month: 'short', year: 'numeric' }).format(endDate)}`,
+      )
+      .with('month', () =>
+        new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' }).format(startDate),
+      )
+      .with('year', () => new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate))
+      .with('allTime', () => `Depuis ${period.startDate.getFullYear()}`)
+      .exhaustive();
   }, [period, startAndEndDateDuringSameYear, startAndEndDateDuringSameMonth]);
 
   useEffect(() => {
@@ -59,22 +67,26 @@ export function useExport({
 
         const { type, startDate, endDate } = period;
 
-        const _subtitle =
-          type === 'week'
-            ? [
-                new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                  .format(startDate)
-                  .replaceAll('/', '_'),
-                new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                  .format(endDate)
-                  .replaceAll('/', '_'),
-              ].join('-')
-            : type === 'month'
-              ? new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' })
-                  .format(startDate)
-                  .toLowerCase()
-                  .replaceAll(' ', '_')
-              : new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate);
+        const _subtitle = match(type)
+          .with('week', () =>
+            [
+              new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                .format(startDate)
+                .replaceAll('/', '_'),
+              new Intl.DateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                .format(endDate)
+                .replaceAll('/', '_'),
+            ].join('-'),
+          )
+          .with('month', () =>
+            new Intl.DateTimeFormat('fr', { month: 'long', year: 'numeric' })
+              .format(startDate)
+              .toLowerCase()
+              .replaceAll(' ', '_'),
+          )
+          .with('year', () => new Intl.DateTimeFormat('fr', { year: 'numeric' }).format(startDate))
+          .with('allTime', () => '')
+          .exhaustive();
 
         saveAs(
           blob,

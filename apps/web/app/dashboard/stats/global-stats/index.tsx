@@ -16,7 +16,7 @@ export function GlobalStats({
 }: {
   downloading: boolean;
   period: TPeriod;
-  prevValues: TValues | undefined;
+  prevValues: TValues | null | undefined;
   setDownloading: (downloading: boolean) => void;
   values: TValues | undefined;
 }) {
@@ -32,9 +32,13 @@ export function GlobalStats({
         {stats.map((key) => {
           const { Icon, label, unit, format } = statsMap[key];
           const value = values?.[key];
-          const prevValue = prevValues?.[key];
+          const prevValue = prevValues !== null ? prevValues?.[key] : null;
           const diff =
-            value === undefined || prevValue === undefined ? undefined : value - prevValue;
+            prevValue === null
+              ? null
+              : value === undefined || prevValue === undefined
+                ? undefined
+                : value - prevValue;
 
           return (
             <Card key={key}>
@@ -51,27 +55,28 @@ export function GlobalStats({
                       {unit}&nbsp;{label}
                     </span>
                   </div>
-                  {diff !== undefined ? (
-                    diff !== 0 && (
-                      <div
-                        className={`h-6 flex items-center justify-center gap-2 text-sm text-center ${diff < 0 ? 'text-red-500 dark:text-red-300' : 'text-emerald-500 dark:text-emerald-300'}`}
-                      >
-                        {diff < 0 ? (
-                          <ArrowTrendingDownIcon className="size-4 shrink-0" />
-                        ) : (
-                          <ArrowTrendingUpIcon className="size-4 shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {diff < 0 ? '-' : '+'}
-                          {format(Math.abs(diff))} {unit}
-                        </span>
+                  {diff !== null &&
+                    (diff !== undefined ? (
+                      diff !== 0 && (
+                        <div
+                          className={`h-6 flex items-center justify-center gap-2 text-sm text-center ${diff < 0 ? 'text-red-500 dark:text-red-300' : 'text-emerald-500 dark:text-emerald-300'}`}
+                        >
+                          {diff < 0 ? (
+                            <ArrowTrendingDownIcon className="size-4 shrink-0" />
+                          ) : (
+                            <ArrowTrendingUpIcon className="size-4 shrink-0" />
+                          )}
+                          <span className="truncate">
+                            {diff < 0 ? '-' : '+'}
+                            {format(Math.abs(diff))} {unit}
+                          </span>
+                        </div>
+                      )
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <Skeleton height="h-6" variant="rounded" width="w-[50%]" />
                       </div>
-                    )
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <Skeleton height="h-6" variant="rounded" width="w-[50%]" />
-                    </div>
-                  )}
+                    ))}
                 </div>
               </div>
             </Card>

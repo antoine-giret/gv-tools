@@ -1,4 +1,4 @@
-export const periodTypes = ['week', 'month', 'year'] as const;
+export const periodTypes = ['week', 'month', 'year', 'allTime'] as const;
 
 export type TPeriodType = (typeof periodTypes)[number];
 
