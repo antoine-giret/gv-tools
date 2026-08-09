@@ -1,8 +1,9 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { TPeriod, TPeriodType } from '@repo/models';
+import { TPeriod } from '@repo/models';
 import { useContext, useMemo, useState } from 'react';
+import { match } from 'ts-pattern';
 
 import { Button, PeriodSelector } from '../../components';
 import { EmptyState } from '../../components/empty-state';
@@ -33,6 +34,7 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
   let activeDaysInARow = 0;
   let maxActiveDaysInARow = 0;
   let maxActiveDaysInARowStartIndex = 0;
+  const distancesByYears: { [key: number]: number } = {};
   const distancesByMonth: { [key: number]: number } = {};
   const distancesByDays: { [key: number]: number } = {};
   const distancesByWeekDays: { [key: number]: number } = {};
@@ -50,12 +52,16 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
     const day = Math.floor(dayDiff / msInOneDay);
 
     if (daysMap?.[key] && daysMap[key].journeys) {
+      const year = currentDay.getFullYear();
       const month = currentDay.getMonth();
       const weekDay = currentDay.getDay();
       const { distance } = daysMap[key];
 
       ++activeDays;
       ++activeDaysInARow;
+
+      if (!distancesByYears[year]) distancesByYears[year] = distance;
+      else distancesByYears[year] += distance;
 
       if (!distancesByMonth[month]) distancesByMonth[month] = distance;
       else distancesByMonth[month] += distance;
@@ -82,6 +88,7 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
     activeDays,
     maxActiveDaysInARow,
     maxActiveDaysInARowStartIndex,
+    distancesByYears,
     distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
     distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
     distancesByWeekDays,
@@ -89,9 +96,10 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
 }
 
 export default function StatsPage() {
-  const [initialPeriodType] = useState<TPeriodType>('month');
-  const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
-  const prevPeriod = useMemo<TPeriod>(() => {
+  const [period, setPeriod] = useState(getInitialPeriod('month'));
+  const prevPeriod = useMemo<TPeriod | null>(() => {
+    if (period.type === 'allTime') return null;
+
     const startDate = new Date(period.startDate);
     const endDate = new Date(period.endDate);
     const today = new Date();
@@ -99,32 +107,34 @@ export default function StatsPage() {
     const comparingWithCurrentMonth =
       comparingWithCurrentYear && period.startDate.getMonth() === today.getMonth();
 
-    if (period.type === 'week') {
-      startDate.setDate(startDate.getDate() - 7);
-      endDate.setDate(endDate.getDate() - 7);
+    return match(period.type)
+      .with('week', () => {
+        startDate.setDate(startDate.getDate() - 7);
+        endDate.setDate(endDate.getDate() - 7);
 
-      return { type: 'week', startDate, endDate };
-    }
+        return { type: 'week', startDate, endDate } as const;
+      })
+      .with('month', () => {
+        startDate.setFullYear(startDate.getFullYear() - 1, startDate.getMonth(), 1);
+        if (comparingWithCurrentMonth)
+          endDate.setFullYear(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        else endDate.setFullYear(endDate.getFullYear() - 1, startDate.getMonth() + 1, 0);
 
-    if (period.type === 'month') {
-      startDate.setFullYear(startDate.getFullYear() - 1, startDate.getMonth(), 1);
-      if (comparingWithCurrentMonth)
-        endDate.setFullYear(today.getFullYear() - 1, today.getMonth(), today.getDate());
-      else endDate.setFullYear(endDate.getFullYear() - 1, startDate.getMonth() + 1, 0);
+        return { type: 'month', startDate, endDate } as const;
+      })
+      .with('year', () => {
+        startDate.setFullYear(startDate.getFullYear() - 1, 0, 1);
+        if (comparingWithCurrentYear)
+          endDate.setFullYear(
+            today.getFullYear() - 1,
+            today.getMonth(),
+            today.getMonth() === 1 && today.getDate() === 29 ? 28 : today.getDate(),
+          );
+        else endDate.setFullYear(endDate.getFullYear() - 1, 11, 31);
 
-      return { type: 'month', startDate, endDate };
-    }
-
-    startDate.setFullYear(startDate.getFullYear() - 1, 0, 1);
-    if (comparingWithCurrentYear)
-      endDate.setFullYear(
-        today.getFullYear() - 1,
-        today.getMonth(),
-        today.getMonth() === 1 && today.getDate() === 29 ? 28 : today.getDate(),
-      );
-    else endDate.setFullYear(endDate.getFullYear() - 1, 11, 31);
-
-    return { type: 'year', startDate, endDate };
+        return { type: 'year', startDate, endDate } as const;
+      })
+      .exhaustive();
   }, [period]);
   const [downloading, setDownloading] = useState(false);
   const { signedInUser } = useContext(UserContext);
@@ -135,7 +145,8 @@ export default function StatsPage() {
   const values = useMemo<TValues | undefined>(() => {
     return data && parseStats({ period, data });
   }, [period, data]);
-  const prevValues = useMemo<TValues | undefined>(() => {
+  const prevValues = useMemo<TValues | null | undefined>(() => {
+    if (!prevPeriod) return null;
     return prevData && parseStats({ period: prevPeriod, data: prevData });
   }, [prevPeriod, prevData]);
   const isEmpty = useMemo(() => values && values.distance === 0, [values]);

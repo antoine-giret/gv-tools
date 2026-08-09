@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { TPeriodType } from '@repo/models';
 import { LngLatBounds } from 'maplibre-gl';
 import { ChangeEvent, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -23,8 +22,7 @@ import { layers, TLayer } from './types';
 const { format: formatDistance } = statsMap.distance;
 
 export default function HeatmapPage() {
-  const [initialPeriodType] = useState<TPeriodType>('month');
-  const [period, setPeriod] = useState(getInitialPeriod(initialPeriodType));
+  const [period, setPeriod] = useState(getInitialPeriod('month'));
   const [selectedLayers, selectLayers] = useState<TLayer[]>(['traces']);
   const [downloading, setDownloading] = useState(false);
   const [mapToDownloadBounds, seMapToDownloadBounds] = useState<LngLatBounds | undefined>();
@@ -87,7 +85,11 @@ export default function HeatmapPage() {
         >
           <div className="flex flex-col gap-6 shrink-0">
             <h1 className="text-lg font-bold">Ma heatmap</h1>
-            <PeriodSelector period={period} periodTypes={['month', 'year']} setPeriod={setPeriod} />
+            <PeriodSelector
+              period={period}
+              periodTypes={['month', 'year', 'allTime']}
+              setPeriod={setPeriod}
+            />
             {(!tracesCollection || !isEmpty) && (
               <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">

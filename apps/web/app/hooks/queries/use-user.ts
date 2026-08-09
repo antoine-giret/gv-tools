@@ -15,6 +15,7 @@ export function useUser(
         id: number;
         username: string;
         profile_picture: string | null;
+        created: string;
       }>({
         endpoint: `/v1/users/${authData?.userId}`,
         user: authData,

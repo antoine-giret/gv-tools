@@ -1,30 +1,26 @@
 import { TPeriod, TPeriodType } from '@repo/models';
+import { match } from 'ts-pattern';
 
-export function getInitialPeriod(periodType: TPeriodType): TPeriod {
+export function getInitialPeriod(periodType: Exclude<TPeriodType, 'allTime'>): TPeriod {
   const startDate = new Date();
   const endDate = new Date();
 
-  switch (periodType) {
-    case 'week':
+  match(periodType)
+    .with('week', () => {
       const day = startDate.getDay();
 
       startDate.setDate(startDate.getDate() - day + (day == 0 ? -6 : 1));
       endDate.setDate(endDate.getDate() - day + (day == 0 ? 0 : 7));
-
-      break;
-    case 'month':
+    })
+    .with('month', () => {
       startDate.setDate(1);
       endDate.setMonth(endDate.getMonth() + 1, 0);
-
-      break;
-    case 'year':
+    })
+    .with('year', () => {
       startDate.setMonth(0, 1);
       endDate.setMonth(11, 31);
-
-      break;
-    default:
-      break;
-  }
+    })
+    .exhaustive();
 
   startDate.setHours(12, 0, 0, 0);
   endDate.setHours(12, 0, 0, 0);
