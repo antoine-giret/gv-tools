@@ -9,15 +9,18 @@ import { Button, PeriodSelector } from '../../components';
 import { EmptyState } from '../../components/empty-state';
 import { UserContext } from '../../context';
 import PrivatePage from '../../guards/private';
+import { useStats } from '../../hooks/queries/use-stats';
 import { useTraces } from '../../hooks/queries/use-traces';
+import { getH3FeatureCollection } from '../../utils/h3';
 import { getInitialPeriod } from '../../utils/period';
 import { useExport } from '../stats/hooks/export';
+import { statsMap } from '../stats/types';
 
 import { HeatmapExport } from './export';
 import { Map, TMapRef } from './map';
 import { layers, TLayer } from './types';
 
-const layersLabels: { [key in TLayer]: string } = { tiles: 'Tuiles H3', traces: 'Traces' };
+const { format: formatDistance } = statsMap.distance;
 
 export default function HeatmapPage() {
   const [initialPeriodType] = useState<TPeriodType>('month');
@@ -27,22 +30,47 @@ export default function HeatmapPage() {
   const [mapToDownloadBounds, seMapToDownloadBounds] = useState<LngLatBounds | undefined>();
   const [mapReady, setMapReady] = useState(false);
   const { signedInUser } = useContext(UserContext);
-  const {
-    title: exportTitle,
-    subtitle: exportSubtitle,
-    setExportRef,
-  } = useExport({ ready: mapReady, title: 'heatmap', period, setDownloading });
+  const { subtitle: exportTitle, setExportRef } = useExport({
+    ready: mapReady,
+    title: 'heatmap',
+    period,
+    setDownloading,
+  });
   const mapRef = useRef<TMapRef>(null);
 
   useEffect(() => {
     return () => setMapReady(false);
   }, [downloading]);
 
+  const { data: stats } = useStats({ user: signedInUser, period });
   const { data: tracesCollection, isFetching } = useTraces({ user: signedInUser, period });
   const isEmpty = useMemo(
     () => tracesCollection && tracesCollection.features.length === 0,
     [tracesCollection],
   );
+  const h3Collection = useMemo<GeoJSON.FeatureCollection<GeoJSON.Polygon>>(
+    () =>
+      tracesCollection
+        ? getH3FeatureCollection({ collection: tracesCollection })
+        : { type: 'FeatureCollection', features: [] },
+    [tracesCollection],
+  );
+  const layersLabels = useMemo<{ [key in TLayer]: string }>(
+    () => ({
+      tiles: `Tuiles H3${h3Collection.features.length > 0 ? ` (${h3Collection.features.length})` : ''}`,
+      traces: 'Traces',
+    }),
+    [h3Collection],
+  );
+  const exportSubtitle = useMemo(() => {
+    if (!stats) return '';
+
+    const parts = [`${formatDistance(stats.distance)} kms à vélo`];
+    if (selectedLayers.includes('tiles') && h3Collection.features.length > 0)
+      parts.push(`${h3Collection.features.length} tuiles explorées`);
+
+    return parts.join(' - ');
+  }, [selectedLayers, stats, h3Collection]);
 
   function handleChangeLayer({ currentTarget: { value, checked } }: ChangeEvent<HTMLInputElement>) {
     const layer = value as TLayer;
@@ -88,12 +116,7 @@ export default function HeatmapPage() {
                 </div>
                 <div className="self-end">
                   <Button
-                    disabled={
-                      isFetching ||
-                      !tracesCollection ||
-                      tracesCollection.features.length === 0 ||
-                      downloading
-                    }
+                    disabled={isFetching || isEmpty || selectedLayers.length === 0 || downloading}
                     Icon={ArrowDownTrayIcon}
                     label="Télécharger"
                     onClick={() => {
@@ -109,6 +132,7 @@ export default function HeatmapPage() {
             <EmptyState period={period} />
           ) : (
             <Map
+              h3Collection={h3Collection}
               mapId="heatmap"
               ref={mapRef}
               selectedLayers={selectedLayers}
@@ -119,13 +143,16 @@ export default function HeatmapPage() {
       </PrivatePage>
       {tracesCollection && downloading && (
         <HeatmapExport
+          h3Collection={h3Collection}
           initialBounds={mapToDownloadBounds}
           mapId="exported-heatmap"
           ref={setExportRef}
           selectedLayers={selectedLayers}
           setReady={setMapReady}
           subtitle={exportSubtitle}
+          subtitleClassName="normal-case"
           title={exportTitle}
+          titleClassName="capitalize"
           tracesCollection={tracesCollection}
         />
       )}

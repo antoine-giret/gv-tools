@@ -3,7 +3,6 @@
 import { GeoJSONSource, LngLatBounds, Map as MaplibreMap, PaddingOptions } from 'maplibre-gl';
 import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { getH3FeatureCollection } from '../../utils/h3';
 import { getBounds } from '../../utils/map';
 
 import { TLayer } from './types';
@@ -24,10 +23,12 @@ function MapRender(
     initialBounds,
     padding,
     tracesCollection,
+    h3Collection,
     selectedLayers,
     setReady,
   }: {
     exported?: boolean;
+    h3Collection: GeoJSON.FeatureCollection<GeoJSON.Polygon> | undefined;
     initialBounds?: LngLatBounds;
     mapId: string;
     padding?: number | PaddingOptions;
@@ -132,7 +133,10 @@ function MapRender(
   }, []);
 
   useEffect(() => {
-    async function updateSource(collection: GeoJSON.FeatureCollection<GeoJSON.LineString>) {
+    async function updateSource(
+      collection: GeoJSON.FeatureCollection<GeoJSON.LineString>,
+      h3Collection: GeoJSON.FeatureCollection<GeoJSON.Polygon>,
+    ) {
       const tracesSource = mapRef.current?.getSource(tracesSourceId);
       if (tracesSource && tracesSource instanceof GeoJSONSource) {
         await tracesSource.setData(collection, true);
@@ -140,7 +144,6 @@ function MapRender(
 
       const tilesSource = mapRef.current?.getSource(tilesSourceId);
       if (tilesSource && tilesSource instanceof GeoJSONSource) {
-        const h3Collection = getH3FeatureCollection({ collection });
         await tilesSource.setData(h3Collection, true);
       }
 
@@ -157,7 +160,8 @@ function MapRender(
       mapRef.current?.once('idle', () => setReady?.(true));
     }
 
-    if (mapInitialized && tracesCollection) updateSource(tracesCollection);
+    if (mapInitialized && tracesCollection && h3Collection)
+      updateSource(tracesCollection, h3Collection);
 
     return () => {
       const tracesSource = mapRef.current?.getSource(tracesSourceId);
@@ -170,7 +174,7 @@ function MapRender(
         tilesSource.setData({ type: 'FeatureCollection', features: [] });
       }
     };
-  }, [mapInitialized, tracesCollection]);
+  }, [mapInitialized, tracesCollection, h3Collection]);
 
   useEffect(() => {
     if (mapInitialized) {
