@@ -76,7 +76,11 @@ export const weekDaysMap: {
 };
 
 export type TValues = {
-  [key in TStat | 'maxActiveDaysInARow' | 'maxActiveDaysInARowStartIndex']: number;
+  [key in
+    | TStat
+    | 'maxActiveDaysInARow'
+    | 'maxActiveDaysInARowStartIndex'
+    | 'currentActiveDaysInARow']: number;
 } & {
   distancesByYears: { [key: number]: number };
   distancesByMonth: number[];
