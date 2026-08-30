@@ -117,7 +117,7 @@ export function DistanceExport({
           </span>
         </div>
       </div>
-      {period.type === 'month' ? (
+      {period.type !== 'week' && (
         <div className="w-full grow flex flex-col gap-[100px]">
           <div className="flex flex-col gap-[50px]">
             <DistanceHeader exported period={period} values={values} />
@@ -125,24 +125,6 @@ export function DistanceExport({
           </div>
           <Days exported values={values} />
         </div>
-      ) : period.type === 'year' ? (
-        <div className="w-full grow flex flex-col gap-[100px]">
-          <div className="flex flex-col gap-[50px]">
-            <h2 className="text-3xl font-bold text-white">Distance parcourue par mois</h2>
-            <DistanceChart exported period={period} setReady={setReady} values={values} />
-          </div>
-          <Days exported values={values} />
-        </div>
-      ) : (
-        period.type === 'allTime' && (
-          <div className="w-full grow flex flex-col gap-[100px]">
-            <div className="flex flex-col gap-[50px]">
-              <h2 className="text-3xl font-bold text-white">Distance parcourue par année</h2>
-              <DistanceChart exported period={period} setReady={setReady} values={values} />
-            </div>
-            <Days exported values={values} />
-          </div>
-        )
       )}
     </ExportLayout>
   );

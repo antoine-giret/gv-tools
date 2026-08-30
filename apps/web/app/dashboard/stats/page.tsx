@@ -18,7 +18,15 @@ import { Distance } from './distance';
 import { GlobalStats } from './global-stats';
 import { months, TStat, TValues } from './types';
 
-function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TValues {
+function parseStats({
+  currentPeriod,
+  period,
+  data,
+}: {
+  currentPeriod?: boolean;
+  data: TStatsData;
+  period: TPeriod;
+}): TValues {
   const daysMap = data.data.reduce<{
     [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number };
   }>((res, { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration }) => {
@@ -81,6 +89,37 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
     ++daysCount;
   }
 
+  let currentActiveDaysInARow = 0;
+  if (currentPeriod && period.type === 'year') {
+    const today = new Date();
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 0);
+    const diff = today.getTime() - firstDayOfYear.getTime();
+    const todayDayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    let lastActiveDayOfYearInARow: number | null = null;
+    let lastActiveDate: Date | null = null;
+    if (distancesByDays[todayDayOfYear - 1]) {
+      lastActiveDayOfYearInARow = todayDayOfYear - 1;
+      lastActiveDate = new Date(today);
+    } else if (distancesByDays[todayDayOfYear - 2]) {
+      lastActiveDayOfYearInARow = todayDayOfYear - 2;
+      lastActiveDate = new Date(yesterday);
+    }
+
+    if (lastActiveDate && lastActiveDayOfYearInARow !== null) {
+      while (true) {
+        ++currentActiveDaysInARow;
+        --lastActiveDayOfYearInARow;
+
+        if (!distancesByDays[lastActiveDayOfYearInARow]) break;
+        lastActiveDate.setDate(lastActiveDate.getDate() - 1);
+      }
+    }
+
+    console.log(currentActiveDaysInARow);
+  }
+
   return {
     journeys: data.count,
     distance: data.distance,
@@ -88,6 +127,7 @@ function parseStats({ period, data }: { data: TStatsData; period: TPeriod }): TV
     activeDays,
     maxActiveDaysInARow,
     maxActiveDaysInARowStartIndex,
+    currentActiveDaysInARow,
     distancesByYears,
     distancesByMonth: months.map((key) => distancesByMonth[key] || 0),
     distancesByDays: new Array(daysCount).fill(null).map((_, index) => distancesByDays[index] || 0),
@@ -143,7 +183,7 @@ export default function StatsPage() {
   const { data: prevData } = useStats({ user: signedInUser, period: prevPeriod });
 
   const values = useMemo<TValues | undefined>(() => {
-    return data && parseStats({ period, data });
+    return data && parseStats({ currentPeriod: true, period, data });
   }, [period, data]);
   const prevValues = useMemo<TValues | null | undefined>(() => {
     if (!prevPeriod) return null;

@@ -40,8 +40,11 @@ export function CalendarExport({
             </span>
           </span>
           <span className="text-4xl text-white/80">
-            dont <span className="text-emerald-300 font-bold">{values.maxActiveDaysInARow}</span> à
-            la suite
+            dont{' '}
+            <span className="text-emerald-300 font-bold">
+              {formatActiveDays(values.maxActiveDaysInARow)}
+            </span>{' '}
+            {activeDaysUnit} consécutifs
           </span>
         </div>
       </div>

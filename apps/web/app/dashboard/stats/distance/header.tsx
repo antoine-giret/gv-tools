@@ -16,10 +16,12 @@ function Header({
   exported,
   title,
   bestValue,
+  averageValue,
 }: {
   exported?: boolean;
   title: string;
   bestValue: { distance: string; label: string } | null | undefined;
+  averageValue: { distance: string; label: string } | null | undefined;
 }) {
   return (
     <div className={`flex flex-col ${exported ? 'dark' : 'gap-1'}`}>
@@ -37,19 +39,26 @@ function Header({
             </p>
           )
         ))}
+      {averageValue === undefined
+        ? !exported && <Skeleton size="sm" variant="text" width="w-[200px]" />
+        : averageValue && (
+            <p className={exported ? 'text-2xl' : 'text-sm text-black dark:text-white'}>
+              En moyenne {averageValue.distance} {averageValue.label}
+            </p>
+          )}
     </div>
   );
 }
 
 function AllTimeHeader({ period, values, exported }: THeader) {
+  const firstYear = useMemo(() => period.startDate.getFullYear(), [period]);
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return new Array(currentYear - firstYear + 1).fill(null).map((_, index) => firstYear + index);
+  }, [firstYear, period]);
   const bestYear = useMemo(() => {
     if (!values) return undefined;
 
-    const currentYear = new Date().getFullYear();
-    const firstYear = period.startDate.getFullYear();
-    const years = new Array(currentYear - firstYear + 1)
-      .fill(null)
-      .map((_, index) => firstYear + index);
     let _bestYear = firstYear;
     let bestYearDistance = 0;
     years.forEach((year) => {
@@ -67,9 +76,24 @@ function AllTimeHeader({ period, values, exported }: THeader) {
       label: `en ${_bestYear}`,
       distance: `${formatDistance(distance)} kms`,
     };
+  }, [firstYear, years, values]);
+  const averageYear = useMemo(() => {
+    if (!values) return undefined;
+
+    return {
+      label: 'par an',
+      distance: `${formatDistance(values.distance / years.length)} kms`,
+    };
   }, [period, values]);
 
-  return <Header bestValue={bestYear} exported={exported} title="Distance parcourue par année" />;
+  return (
+    <Header
+      averageValue={averageYear}
+      bestValue={bestYear}
+      exported={exported}
+      title="Distance parcourue par année"
+    />
+  );
 }
 
 function YearHeader({ period, values, exported }: THeader) {
@@ -97,8 +121,26 @@ function YearHeader({ period, values, exported }: THeader) {
       distance: `${formatDistance(distance)} kms`,
     };
   }, [period, values]);
+  const averageMonth = useMemo(() => {
+    if (!values) return undefined;
 
-  return <Header bestValue={bestMonth} exported={exported} title="Distance parcourue par mois" />;
+    const today = new Date();
+    const isCurrentYear = period.startDate.getFullYear() === today.getFullYear();
+
+    return {
+      label: 'par mois',
+      distance: `${formatDistance(values.distance / (isCurrentYear ? today.getMonth() + 1 : 12))} kms`,
+    };
+  }, [period, values]);
+
+  return (
+    <Header
+      averageValue={averageMonth}
+      bestValue={bestMonth}
+      exported={exported}
+      title="Distance parcourue par mois"
+    />
+  );
 }
 
 function MonthHeader({ period, values, exported }: THeader) {
@@ -129,10 +171,28 @@ function MonthHeader({ period, values, exported }: THeader) {
       distance: `${formatDistance(distance)} kms`,
     };
   }, [period, values]);
+  const averageDay = useMemo(() => {
+    if (!values) return undefined;
+
+    const today = new Date();
+    const isCurrentMonth =
+      period.startDate.getFullYear() === today.getFullYear() &&
+      period.startDate.getMonth() === today.getMonth();
+
+    return {
+      label: 'par jour',
+      distance: `${formatDistance(values.distance / (isCurrentMonth ? today.getDate() : period.endDate.getDate()))} kms`,
+    };
+  }, [period, values]);
 
   return (
     <>
-      <Header bestValue={bestDay} exported={exported} title="Distance parcourue par jour" />
+      <Header
+        averageValue={averageDay}
+        bestValue={bestDay}
+        exported={exported}
+        title="Distance parcourue par jour"
+      />
     </>
   );
 }
@@ -159,10 +219,28 @@ function WeekHeader({ period, values, exported }: THeader) {
       distance: `${formatDistance(distance)} kms`,
     };
   }, [period, values]);
+  const averageWeekDay = useMemo(() => {
+    if (!values) return undefined;
+
+    const today = new Date();
+    const todayWeekDay = today.getDay() === 0 ? 7 : today.getDay();
+    const isCurrentWeek =
+      period.startDate.getTime() < today.getTime() && today.getTime() < period.endDate.getTime();
+
+    return {
+      label: 'par jour',
+      distance: `${formatDistance(values.distance / (isCurrentWeek ? todayWeekDay : 7))} kms`,
+    };
+  }, [period, values]);
 
   return (
     <>
-      <Header bestValue={bestWeekDay} exported={exported} title="Distance parcourue par jour" />
+      <Header
+        averageValue={averageWeekDay}
+        bestValue={bestWeekDay}
+        exported={exported}
+        title="Distance parcourue par jour"
+      />
     </>
   );
 }
