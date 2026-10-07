@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { geoveloFetch } from '../../utils/fetcher';
-
 export function useUser(
   authData: {
     authorizationToken: string;
@@ -11,15 +9,14 @@ export function useUser(
   return useQuery({
     queryKey: ['user', authData?.userId],
     queryFn: async () => {
-      return geoveloFetch<{
+      const response = await fetch(`/api/users/${authData?.userId}`);
+
+      return response.json() as Promise<{
         id: number;
         username: string;
         profile_picture: string | null;
         created: string;
-      }>({
-        endpoint: `/v1/users/${authData?.userId}`,
-        user: authData,
-      });
+      }>;
     },
     enabled: !!authData,
   });
