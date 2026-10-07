@@ -1,15 +1,15 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
-import { geoveloFetch } from '../../utils/fetcher';
-
 export function useCommutesToWork({ user }: { user: TUser | null | undefined }) {
   const userId = user?.id;
 
   return useQuery({
     queryKey: ['commuteToWork', userId],
     queryFn: async () => {
-      return geoveloFetch<{
+      const response = await fetch(`/api/users/${userId}/reference_trips`);
+
+      return response.json() as Promise<{
         results: Array<{
           id: number;
           distance_in_meters_end_start: number;
@@ -20,10 +20,7 @@ export function useCommutesToWork({ user }: { user: TUser | null | undefined }) 
           geo_start: GeoJSON.Point;
           geo_start_title: string;
         }>;
-      }>({
-        endpoint: `/v3/users/${userId}/reference_trips`,
-        user,
-      });
+      }>;
     },
     enabled: !!userId,
   });
@@ -48,15 +45,19 @@ export function useCommutesToWorkOccurrences({
   return useQuery({
     queryKey: ['commuteToWorkOccurrences', userId, startDateFormatted, endDateFormatted],
     queryFn: async () => {
-      const queryParams = [
-        { key: 'period', value: 'custom' },
-        { key: 'date_start', value: startDateFormatted },
-        { key: 'date_end', value: endDateFormatted },
-      ];
+      const searchParams = new URLSearchParams({
+        period: 'custom',
+        date_start: startDateFormatted,
+        date_end: endDateFormatted,
+      });
 
       const results = await Promise.all(
-        commuteToWorkIds?.map((commuteToWorkId) =>
-          geoveloFetch<{
+        commuteToWorkIds?.map(async (commuteToWorkId) => {
+          const response = await fetch(
+            `/api/users/${userId}/reference_trips/${commuteToWorkId}/occurrences?${searchParams}`,
+          );
+
+          return response.json() as Promise<{
             results: Array<{
               candidate: boolean;
               date: string;
@@ -65,12 +66,8 @@ export function useCommutesToWorkOccurrences({
               enabled: boolean;
               user_reference_trip: number;
             }>;
-          }>({
-            endpoint: `/v3/users/${userId}/reference_trips/${commuteToWorkId}/occurrences`,
-            queryParams,
-            user,
-          }),
-        ) || [],
+          }>;
+        }) || [],
       );
 
       return results.flatMap(({ results }) => results);

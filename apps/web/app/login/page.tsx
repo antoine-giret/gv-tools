@@ -15,10 +15,7 @@ export default function LoginPage() {
           <span className="text-sm text-center">
             Connectez-vous avec votre compte Geovelo afin de visualiser votre activité vélo.
           </span>
-          <Button
-            href={`${process.env.NEXT_PUBLIC_GV_FRONTEND_URL}/fr/sign-in/?redirect-url=${process.env.NEXT_PUBLIC_FRONTEND_URL}/login/callback&redirect-params=userId,authorizationToken`}
-            label="Se connecter avec Geovelo"
-          />
+          <Button href="/api/login" label="Se connecter avec Geovelo" />
         </div>
       </div>
     </GuestPage>

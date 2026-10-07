@@ -1,8 +1,6 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
-import { geoveloFetch } from '../../utils/fetcher';
-
 export type TStatsData = {
   count: number;
   data: Array<{ count: number; distance: number; duration: number; unit: number }>;
@@ -26,18 +24,16 @@ export function useStats({
   return useQuery({
     queryKey: ['stats', userId, startDateFormatted, endDateFormatted],
     queryFn: async () => {
-      const queryParams = [
-        { key: 'period', value: 'custom' },
-        { key: 'date_start', value: startDateFormatted },
-        { key: 'date_end', value: endDateFormatted },
-        { key: 'unit', value: 'day' },
-      ];
-
-      return geoveloFetch<TStatsData>({
-        endpoint: `/v2/users/${userId}/stats_traces`,
-        queryParams,
-        user,
+      const searchParams = new URLSearchParams({
+        period: 'custom',
+        date_start: startDateFormatted,
+        date_end: endDateFormatted,
+        unit: 'day',
       });
+
+      const response = await fetch(`/api/users/${userId}/stats_traces?${searchParams}`);
+
+      return response.json() as Promise<TStatsData>;
     },
     enabled: !!userId && !!period,
   });
