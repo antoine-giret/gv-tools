@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         created?: string;
       };
 
-      addOrUpdateUser({
+      await addOrUpdateUser({
         geoveloId: userId,
         username: user.username ?? null,
         profilePicture: user.profile_picture ?? null,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
       const response = NextResponse.redirect(new URL('/dashboard/stats', request.url));
 
-      response.cookies.set(SESSION_COOKIE, createSession(userId), {
+      response.cookies.set(SESSION_COOKIE, await createSession(userId), {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',

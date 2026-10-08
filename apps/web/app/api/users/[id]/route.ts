@@ -5,10 +5,10 @@ import { unauthorized } from '../../utils';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const error = unauthorized(request, id);
+  const error = await unauthorized(request, id);
   if (error) return error;
 
-  const user = getUser(id);
+  const user = await getUser(id);
 
   if (!user) return NextResponse.json({ detail: 'Not found.' }, { status: 404 });
 
