@@ -5,10 +5,10 @@ import { getSessionGeoveloId } from '../utils/db';
 export const SESSION_COOKIE = 'session_token';
 
 // Returns an error response unless the session token belongs to the requested user
-export function unauthorized(request: NextRequest, userId: string) {
+export async function unauthorized(request: NextRequest, userId: string) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
 
-  if (!token || getSessionGeoveloId(token) !== userId)
+  if (!token || (await getSessionGeoveloId(token)) !== userId)
     return NextResponse.json({ detail: 'Unauthorized.' }, { status: 401 });
 
   return null;
@@ -25,7 +25,7 @@ export function fetchGeovelo(endpoint: string, authorizationToken?: string, sear
 }
 
 export async function proxyToGeovelo(request: NextRequest, userId: string, endpoint: string) {
-  const error = unauthorized(request, userId);
+  const error = await unauthorized(request, userId);
   if (error) return error;
 
   const response = await fetchGeovelo(
