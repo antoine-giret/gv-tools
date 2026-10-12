@@ -27,7 +27,7 @@ function parseStats({
   data: TStatsData;
   period: TPeriod;
 }): TValues {
-  const daysMap = data.data.reduce<{
+  const daysMap = (data.data ?? []).reduce<{
     [key: string]: { [key in Exclude<TStat, 'activeDays'>]: number };
   }>((res, { unit, count: dataJourneys, distance: dataDistance, duration: dataDuration }) => {
     res[unit] = {
