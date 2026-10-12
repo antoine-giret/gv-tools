@@ -88,7 +88,12 @@ function MapRender(
             visibility: selectedLayers.includes('tiles') ? 'visible' : 'none',
           },
           paint: {
-            'fill-color': '#00bc7d',
+            'fill-color': [
+              'case',
+              ['boolean', ['get', 'isInLargestArea'], false],
+              '#ec4899',
+              '#00bc7d',
+            ],
             'fill-opacity': 0.5,
           },
         },
