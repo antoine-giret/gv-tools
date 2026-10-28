@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addOrUpdateUser, createSession, SESSION_MAX_AGE_SECONDS } from '../../../utils/db';
 import { fetchGeovelo, SESSION_COOKIE } from '../../utils';
 
+// request.url carries the server's bind address (e.g. 0.0.0.0), not the host the cookies are set on
+function frontendUrl(path: string, request: NextRequest) {
+  return new URL(path, process.env.NEXT_PUBLIC_FRONTEND_URL || request.url);
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const userId = searchParams.get('userId');
@@ -28,7 +33,7 @@ export async function GET(request: NextRequest) {
         createdAt: user.created ?? null,
       });
 
-      const response = NextResponse.redirect(new URL('/dashboard/stats', request.url));
+      const response = NextResponse.redirect(frontendUrl('/dashboard/stats', request));
 
       response.cookies.set(SESSION_COOKIE, await createSession(userId), {
         httpOnly: true,
@@ -44,5 +49,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/login', request.url));
+  return NextResponse.redirect(frontendUrl('/login', request));
 }

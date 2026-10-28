@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: geovelo_tools
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U user -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # POSTGRES_DB is only applied on an empty volume, so create the database if it is missing
+  db-init:
+    image: postgres:17-alpine
+    environment:
+      PGHOST: db
+      PGUSER: user
+      PGPASSWORD: password
+    entrypoint: ['sh', '-c']
+    command:
+      - >-
+        psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'geovelo_tools'" | grep -q 1
+        || createdb geovelo_tools
+    depends_on:
+      db:
+        condition: service_healthy
+
+  pgadmin:
+    image: dpage/pgadmin4:9
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - '5050:80'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    env_file:
+      - apps/web/.env
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/geovelo_tools
+      WATCHPACK_POLLING: 'true'
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      # Keep the container's dependencies and build output separate from the host's
+      - node_modules:/app/node_modules
+      - web-node_modules:/app/apps/web/node_modules
+      - web-next:/app/apps/web/.next
+      - models-node_modules:/app/packages/models/node_modules
+      - eslint-config-node_modules:/app/packages/eslint-config/node_modules
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:
+  pgadmin-data:
+  node_modules:
+  web-node_modules:
+  web-next:
+  models-node_modules:
+  eslint-config-node_modules:
