@@ -61,7 +61,7 @@ async function migrate() {
   }
 }
 
-function ready() {
+export function ready() {
   globalForPg.pgMigration ??= migrate().catch((err) => {
     globalForPg.pgMigration = undefined;
     throw err;

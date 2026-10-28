@@ -29,7 +29,7 @@ function LocalStorageProvider({
     if (cookiesStoreUserId) {
       userId = parseInt(cookiesStoreUserId);
       authorizationToken = cookiesStoreAuthorizationToken || '';
-    } else {
+    } else if (typeof window !== 'undefined') {
       try {
         const localStorageUserId = localStorage.getItem('user_id');
         const localStorageAuthorizationToken = localStorage.getItem('authorization_token');
