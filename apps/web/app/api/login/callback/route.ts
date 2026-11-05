@@ -1,6 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 
-import { addOrUpdateUser, createSession, SESSION_MAX_AGE_SECONDS } from '../../../utils/db';
+import {
+  addOrUpdateUser,
+  createSession,
+  getTracesSyncedAt,
+  SESSION_MAX_AGE_SECONDS,
+} from '../../../utils/db';
+import { syncTraces } from '../../../utils/traces-sync';
 import { fetchGeovelo, SESSION_COOKIE } from '../../utils';
 
 // request.url carries the server's bind address (e.g. 0.0.0.0), not the host the cookies are set on
@@ -32,6 +38,14 @@ export async function GET(request: NextRequest) {
         profilePicture: user.profile_picture ?? null,
         createdAt: user.created ?? null,
       });
+
+      // First sign-in: fetch the whole history without delaying the redirect
+      if (!(await getTracesSyncedAt(userId)))
+        after(() =>
+          syncTraces(userId, authorizationToken).catch((err) =>
+            console.error('Traces sync failed', err),
+          ),
+        );
 
       const response = NextResponse.redirect(frontendUrl('/dashboard/stats', request));
 

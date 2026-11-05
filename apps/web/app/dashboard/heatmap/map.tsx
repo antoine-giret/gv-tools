@@ -1,16 +1,28 @@
 'use client';
 
 import { GeoJSONSource, LngLatBounds, Map as MaplibreMap, PaddingOptions } from 'maplibre-gl';
-import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  forwardRef,
+  Ref,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+import { createPortal } from 'react-dom';
 
 import { getBounds } from '../../utils/map';
 
-import { TLayer } from './types';
+import { Legend } from './legend';
+import { LegendControl } from './legend-control';
+import { layers, TLayer } from './types';
 
 const tracesSourceId = 'traces';
 const tracesLayerId = 'traces';
 const tilesSourceId = 'tiles';
 const tilesLayerId = 'tiles';
+const newTilesLayerId = 'new-tiles';
 
 export type TMapRef = {
   getBounds: () => LngLatBounds | undefined;
@@ -26,6 +38,8 @@ function MapRender(
     h3Collection,
     selectedLayers,
     setReady,
+    onChangeLayer,
+    layersLabels,
   }: {
     exported?: boolean;
     h3Collection: GeoJSON.FeatureCollection<GeoJSON.Polygon> | undefined;
@@ -35,10 +49,13 @@ function MapRender(
     selectedLayers: TLayer[];
     setReady?: (ready: boolean) => void;
     tracesCollection: GeoJSON.FeatureCollection<GeoJSON.LineString> | undefined;
+    onChangeLayer?: (event: ChangeEvent<HTMLInputElement>) => void;
+    layersLabels?: { [key in TLayer]: string };
   },
   ref: Ref<TMapRef>,
 ) {
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [legendContent, setLegendContent] = useState<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap>(null);
 
   useImperativeHandle(ref, () => ({ getBounds: () => mapRef.current?.getBounds() }));
@@ -100,6 +117,30 @@ function MapRender(
         'waterway_label',
       );
 
+      // Fill layers have no outline width, so new tiles get their own line layer
+      mapRef.current.addLayer(
+        {
+          id: newTilesLayerId,
+          type: 'line',
+          source: tilesSourceId,
+          filter: ['boolean', ['get', 'isNew'], false],
+          layout: {
+            visibility: selectedLayers.includes('tiles') ? 'visible' : 'none',
+            'line-join': 'round',
+          },
+          paint: {
+            'line-color': [
+              'case',
+              ['boolean', ['get', 'isInLargestArea'], false],
+              '#ec4899',
+              '#00bc7d',
+            ],
+            'line-width': 2,
+          },
+        },
+        'waterway_label',
+      );
+
       mapRef.current.addLayer(
         {
           id: tracesLayerId,
@@ -123,6 +164,13 @@ function MapRender(
     function handleLoad() {
       initSources();
       initLayers();
+
+      if (!exported && onChangeLayer && layersLabels) {
+        const legendControl = new LegendControl();
+        mapRef.current?.addControl(legendControl, 'top-right');
+        setLegendContent(legendControl.legendContent);
+      }
+
       setMapInitialized(true);
     }
 
@@ -133,6 +181,7 @@ function MapRender(
       mapRef.current?.off('load', handleLoad);
       mapRef.current?.remove();
       mapRef.current = null;
+      setLegendContent(null);
       setMapInitialized(false);
     };
   }, []);
@@ -189,22 +238,37 @@ function MapRender(
         selectedLayers.includes('traces') ? 'visible' : 'none',
       );
 
-      mapRef.current?.setLayoutProperty(
-        tilesLayerId,
-        'visibility',
-        selectedLayers.includes('tiles') ? 'visible' : 'none',
-      );
+      for (const layerId of [tilesLayerId, newTilesLayerId])
+        mapRef.current?.setLayoutProperty(
+          layerId,
+          'visibility',
+          selectedLayers.includes('tiles') ? 'visible' : 'none',
+        );
     }
   }, [mapInitialized, selectedLayers]);
 
   return (
-    <div className="grow relative" id={mapId}>
-      {!exported && !tracesCollection && (
-        <div className="absolute top-0 left-0 w-full h-full bg-black/70 flex items-center justify-center z-100">
-          <div className="inline-block w-10 h-10 border-5 border-b-transparent border-emerald-500 rounded-full box-border animate-spin" />
-        </div>
-      )}
-    </div>
+    <>
+      <div className={`grow relative ${exported ? '' : 'min-h-[400px]'}`} id={mapId}>
+        {!exported && !tracesCollection && (
+          <div className="absolute top-0 left-0 w-full h-full bg-black/70 flex items-center justify-center z-100">
+            <div className="inline-block w-10 h-10 border-5 border-b-transparent border-emerald-500 rounded-full box-border animate-spin" />
+          </div>
+        )}
+      </div>
+      {legendContent &&
+        onChangeLayer &&
+        layersLabels &&
+        createPortal(
+          <Legend
+            layers={layers}
+            layersLabels={layersLabels}
+            onChangeLayer={onChangeLayer}
+            selectedLayers={selectedLayers}
+          />,
+          legendContent,
+        )}
+    </>
   );
 }
 
