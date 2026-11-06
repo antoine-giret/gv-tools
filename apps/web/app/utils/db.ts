@@ -26,6 +26,18 @@ const MIGRATIONS: string[] = [
      "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
      "createdAt" BIGINT NOT NULL
    );`,
+  `ALTER TABLE users ADD COLUMN "tracesSyncedAt" TIMESTAMPTZ;
+   CREATE TABLE IF NOT EXISTS user_h3_cells (
+     "userId" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+     "h3Index" TEXT NOT NULL,
+     "traceId" BIGINT NOT NULL,
+     "visitedAt" TIMESTAMPTZ,
+     PRIMARY KEY ("userId", "h3Index", "traceId")
+   );`,
+  // Uncleaned traces used to be stored: start over with a full sync
+  `DELETE FROM user_h3_cells;
+   UPDATE users SET "tracesSyncedAt" = NULL;
+   CREATE INDEX IF NOT EXISTS user_h3_cells_trace ON user_h3_cells ("userId", "traceId");`,
 ];
 
 const MIGRATION_LOCK_ID = 727274;
@@ -141,4 +153,73 @@ export async function getUser(geoveloId: string) {
   );
 
   return rows[0];
+}
+
+export async function getTracesSyncedAt(geoveloId: string) {
+  const { rows } = await query<{ tracesSyncedAt: Date | null }>(
+    'SELECT "tracesSyncedAt" FROM users WHERE "geoveloId" = $1',
+    [geoveloId],
+  );
+
+  return rows[0]?.tracesSyncedAt ?? null;
+}
+
+export async function setTracesSyncedAt(geoveloId: string, tracesSyncedAt: Date) {
+  // Never moves backwards: a resumed sync may restart before the date already saved
+  await query(
+    `UPDATE users SET "tracesSyncedAt" = GREATEST("tracesSyncedAt", $1)
+     WHERE "geoveloId" = $2`,
+    [tracesSyncedAt, geoveloId],
+  );
+}
+
+export async function getStoredTraceIds(geoveloId: string, traceIds: number[]) {
+  const { rows } = await query<{ traceId: string }>(
+    `SELECT DISTINCT cells."traceId" FROM user_h3_cells AS cells
+     JOIN users ON users.id = cells."userId"
+     WHERE users."geoveloId" = $1 AND cells."traceId" = ANY($2::bigint[])`,
+    [geoveloId, traceIds],
+  );
+
+  // BIGINT columns are returned as strings
+  return new Set(rows.map(({ traceId }) => Number(traceId)));
+}
+
+export async function addH3Cells(
+  geoveloId: string,
+  cells: { h3Index: string; traceId: number; visitedAt: string | null }[],
+) {
+  if (cells.length === 0) return;
+
+  // Re-synced traces are ignored thanks to the primary key
+  await query(
+    `INSERT INTO user_h3_cells ("userId", "h3Index", "traceId", "visitedAt")
+     SELECT users.id, cells."h3Index", cells."traceId", cells."visitedAt"
+     FROM users, unnest($2::text[], $3::bigint[], $4::timestamptz[])
+       AS cells("h3Index", "traceId", "visitedAt")
+     WHERE users."geoveloId" = $1
+     ON CONFLICT DO NOTHING`,
+    [
+      geoveloId,
+      cells.map(({ h3Index }) => h3Index),
+      cells.map(({ traceId }) => traceId),
+      cells.map(({ visitedAt }) => visitedAt),
+    ],
+  );
+}
+
+// Cells whose first visit ever is within [startDate, endDate)
+export async function getNewH3Cells(geoveloId: string, startDate: Date, endDate: Date) {
+  const { rows } = await query<{ h3Index: string }>(
+    `SELECT "h3Index" FROM (
+       SELECT cells."h3Index", MIN(cells."visitedAt") AS "firstVisitedAt"
+       FROM user_h3_cells AS cells JOIN users ON users.id = cells."userId"
+       WHERE users."geoveloId" = $1
+       GROUP BY cells."h3Index"
+     ) AS first_visits
+     WHERE "firstVisitedAt" >= $2 AND "firstVisitedAt" < $3`,
+    [geoveloId, startDate, endDate],
+  );
+
+  return rows.map(({ h3Index }) => h3Index);
 }
