@@ -1,13 +1,15 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchApi } from '../../utils/fetch-api';
+
 export function useCommutesToWork({ user }: { user: TUser | null | undefined }) {
   const userId = user?.id;
 
   return useQuery({
     queryKey: ['commuteToWork', userId],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${userId}/reference_trips`);
+      const response = await fetchApi(`/api/users/${userId}/reference_trips`);
 
       return response.json() as Promise<{
         results: Array<{
@@ -53,7 +55,7 @@ export function useCommutesToWorkOccurrences({
 
       const results = await Promise.all(
         commuteToWorkIds?.map(async (commuteToWorkId) => {
-          const response = await fetch(
+          const response = await fetchApi(
             `/api/users/${userId}/reference_trips/${commuteToWorkId}/occurrences?${searchParams}`,
           );
 

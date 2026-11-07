@@ -56,8 +56,14 @@ export async function GET(request: NextRequest) {
         maxAge: SESSION_MAX_AGE_SECONDS,
         path: '/',
       });
-      response.cookies.set('user_id', userId);
-      response.cookies.set('authorization_token', authorizationToken);
+      const clientCookieOptions = {
+        sameSite: 'lax' as const,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: SESSION_MAX_AGE_SECONDS,
+        path: '/',
+      };
+      response.cookies.set('user_id', userId, clientCookieOptions);
+      response.cookies.set('authorization_token', authorizationToken, clientCookieOptions);
 
       return response;
     }

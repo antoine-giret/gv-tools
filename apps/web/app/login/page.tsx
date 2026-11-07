@@ -1,9 +1,15 @@
+'use client';
+
 import { UserIcon } from '@heroicons/react/24/outline';
+import { useContext } from 'react';
 
 import { Button } from '../components';
+import { UserContext } from '../context';
 import GuestPage from '../guards/guest';
 
 export default function LoginPage() {
+  const { sessionExpired } = useContext(UserContext);
+
   return (
     <GuestPage>
       <div className="flex flex-col items-center justify-center grow p-6">
@@ -15,6 +21,11 @@ export default function LoginPage() {
           <span className="text-sm text-center">
             Connectez-vous avec votre compte Geovelo afin de visualiser votre activité vélo.
           </span>
+          {sessionExpired && (
+            <p className="text-sm text-center" role="alert">
+              Votre session a expiré. Reconnectez-vous pour retrouver vos statistiques.
+            </p>
+          )}
           <Button href="/api/login" label="Se connecter avec Geovelo" />
         </div>
       </div>

@@ -179,8 +179,12 @@ export default function StatsPage() {
   const [downloading, setDownloading] = useState(false);
   const { signedInUser } = useContext(UserContext);
 
-  const { data } = useStats({ user: signedInUser, period });
-  const { data: prevData } = useStats({ user: signedInUser, period: prevPeriod });
+  const { data, isError, refetch } = useStats({ user: signedInUser, period });
+  const {
+    data: prevData,
+    isError: prevIsError,
+    refetch: refetchPrevious,
+  } = useStats({ user: signedInUser, period: prevPeriod });
 
   const values = useMemo<TValues | undefined>(() => {
     return data && parseStats({ currentPeriod: true, period, data });
@@ -210,6 +214,20 @@ export default function StatsPage() {
             )}
           </div>
         </div>
+        {(isError || prevIsError) && (
+          <div className="flex flex-col items-center gap-3 text-center" role="alert">
+            <p>
+              Impossible de charger toutes les statistiques. Vérifiez votre connexion et réessayez.
+            </p>
+            <Button
+              label="Réessayer"
+              onClick={() => {
+                if (isError) void refetch();
+                if (prevIsError) void refetchPrevious();
+              }}
+            />
+          </div>
+        )}
         {isEmpty ? (
           <EmptyState period={period} />
         ) : (
