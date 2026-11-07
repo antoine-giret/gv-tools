@@ -48,8 +48,15 @@ The server session and the browser's Geovelo credentials expire after 30 days.
 If either is missing or the server rejects the credentials, the app asks the user
 to sign in again. Network and server errors do not sign the user out.
 
-Run the request error handling tests with Node.js 22:
+## Heatmap
+
+Explored zones are read from the synchronized database cells, independently of
+the simplified traces displayed on the map. For a selected month or year, cells
+are filtered by the local dates of their visits; the all-time view includes all
+stored cells. New zones are those first visited during the selected period.
+
+Run the request error handling and heatmap tests with Node.js 22:
 
 ```bash
-node --experimental-strip-types --test tests/fetch-api.test.mjs
+node --experimental-strip-types --test tests/fetch-api.test.mjs tests/heatmap-cells.test.mjs
 ```

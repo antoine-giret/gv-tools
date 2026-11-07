@@ -202,7 +202,7 @@ function MapRender(
       }
 
       if (!initialBounds) {
-        const bounds = getBounds(collection);
+        const bounds = getBounds(collection) ?? getBounds(h3Collection);
         if (bounds)
           mapRef.current?.fitBounds(bounds, {
             padding: 50,
@@ -214,8 +214,8 @@ function MapRender(
       mapRef.current?.once('idle', () => setReady?.(true));
     }
 
-    if (mapInitialized && tracesCollection && h3Collection)
-      updateSource(tracesCollection, h3Collection);
+    if (mapInitialized && tracesCollection)
+      updateSource(tracesCollection, h3Collection ?? { type: 'FeatureCollection', features: [] });
 
     return () => {
       const tracesSource = mapRef.current?.getSource(tracesSourceId);

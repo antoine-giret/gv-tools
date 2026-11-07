@@ -208,6 +208,19 @@ export async function addH3Cells(
   );
 }
 
+export async function getH3Cells(geoveloId: string, startDate?: Date, endDate?: Date) {
+  const { rows } = await query<{ h3Index: string }>(
+    `SELECT DISTINCT cells."h3Index"
+     FROM user_h3_cells AS cells JOIN users ON users.id = cells."userId"
+     WHERE users."geoveloId" = $1
+       AND ($2::timestamptz IS NULL OR cells."visitedAt" >= $2)
+       AND ($3::timestamptz IS NULL OR cells."visitedAt" < $3)`,
+    [geoveloId, startDate ?? null, endDate ?? null],
+  );
+
+  return rows.map(({ h3Index }) => h3Index);
+}
+
 // Cells whose first visit ever is within [startDate, endDate)
 export async function getNewH3Cells(geoveloId: string, startDate: Date, endDate: Date) {
   const { rows } = await query<{ h3Index: string }>(

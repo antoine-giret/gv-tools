@@ -1,4 +1,4 @@
-import { cellToBoundary, gridDisk, gridRing, latLngToCell } from 'h3-js';
+import { cellToBoundary, gridDisk, gridRing } from 'h3-js';
 
 export function getLargestHexagonalClusterH3Indexes(h3Indexes: Set<string>): string[] {
   if (h3Indexes.size === 0) return [];
@@ -33,17 +33,9 @@ export function getLargestHexagonalClusterH3Indexes(h3Indexes: Set<string>): str
   return gridDisk(bestCenter, bestRadius);
 }
 
-export function getH3FeatureCollection({
-  collection,
-}: {
-  collection: GeoJSON.FeatureCollection<GeoJSON.LineString, object | null>;
-}): GeoJSON.FeatureCollection<GeoJSON.Polygon, object | null> {
-  const h3Indexes = new Set(
-    collection.features.flatMap(({ geometry: { coordinates } }) =>
-      coordinates.flatMap(([lng, lat]) => latLngToCell(lat, lng, 8)),
-    ),
-  );
-
+export function getH3FeatureCollection(
+  h3Indexes: Set<string>,
+): GeoJSON.FeatureCollection<GeoJSON.Polygon, object | null> {
   const largestAreaH3Indexes = new Set(getLargestHexagonalClusterH3Indexes(h3Indexes));
 
   return {
