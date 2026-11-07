@@ -12,12 +12,13 @@ export function Header() {
           <Image
             priority
             alt=""
+            aria-label="Mon activité vélo"
             className="hidden dark:block"
             height={40}
             src="/logo-dark.png"
             width={40}
           />
-          <span className="text-lg font-bold">Mon activité vélo</span>
+          <span className="text-lg font-bold hidden md:inline-block">Mon activité vélo</span>
         </div>
         <Nav />
       </div>
