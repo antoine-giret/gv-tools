@@ -20,6 +20,15 @@ type TTrace = {
 
 type TSyncProgress = { page: number; pages: number | null };
 
+export class GeoveloSyncError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 const globalForSync = globalThis as unknown as {
   tracesSyncs?: Map<string, Promise<Date>>;
   tracesSyncsProgress?: Map<string, TSyncProgress>;
@@ -38,7 +47,10 @@ function formatDate(date: Date) {
 async function fetchJson<T>(endpoint: string, authorizationToken: string, search: string) {
   const response = await fetchGeovelo(endpoint, authorizationToken, search);
   if (!response.ok)
-    throw new Error(`Geovelo ${endpoint} responded ${response.status}: ${await response.text()}`);
+    throw new GeoveloSyncError(
+      response.status,
+      `Geovelo ${endpoint} responded ${response.status}: ${await response.text()}`,
+    );
 
   return response.json() as Promise<T>;
 }

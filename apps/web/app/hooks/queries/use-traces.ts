@@ -1,6 +1,8 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchApi } from '../../utils/fetch-api';
+
 export function useTraces({ user, period }: { user: TUser | null | undefined; period: TPeriod }) {
   const userId = user?.id;
   const { startDate, endDate } = period;
@@ -16,7 +18,7 @@ export function useTraces({ user, period }: { user: TUser | null | undefined; pe
         unit: 'day',
       });
 
-      const response = await fetch(`/api/users/${userId}/simplified_traces?${searchParams}`);
+      const response = await fetchApi(`/api/users/${userId}/simplified_traces?${searchParams}`);
       const res = (await response.json()) as GeoJSON.FeatureCollection<GeoJSON.LineString>;
 
       return { type: 'FeatureCollection', features: res.features || [] };

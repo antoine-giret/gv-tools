@@ -1,6 +1,8 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchApi } from '../../utils/fetch-api';
+
 export type TStatsData = {
   count: number;
   data: Array<{ count: number; distance: number; duration: number; unit: number }>;
@@ -31,7 +33,7 @@ export function useStats({
         unit: 'day',
       });
 
-      const response = await fetch(`/api/users/${userId}/stats_traces?${searchParams}`);
+      const response = await fetchApi(`/api/users/${userId}/stats_traces?${searchParams}`);
 
       return response.json() as Promise<TStatsData>;
     },

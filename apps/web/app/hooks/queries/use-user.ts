@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchApi } from '../../utils/fetch-api';
+
 export function useUser(
   authData: {
     authorizationToken: string;
@@ -9,7 +11,7 @@ export function useUser(
   return useQuery({
     queryKey: ['user', authData?.userId],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${authData?.userId}`);
+      const response = await fetchApi(`/api/users/${authData?.userId}`);
 
       return response.json() as Promise<{
         id: number;

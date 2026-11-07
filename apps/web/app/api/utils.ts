@@ -8,7 +8,11 @@ export const SESSION_COOKIE = 'session_token';
 export async function unauthorized(request: NextRequest, userId: string) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
 
-  if (!token || (await getSessionGeoveloId(token)) !== userId)
+  if (
+    !token ||
+    !request.cookies.get('authorization_token')?.value ||
+    (await getSessionGeoveloId(token)) !== userId
+  )
     return NextResponse.json({ detail: 'Unauthorized.' }, { status: 401 });
 
   return null;

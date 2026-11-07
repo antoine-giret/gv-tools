@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getTracesSyncProgress, syncTraces } from '../../../../utils/traces-sync';
+import { GeoveloSyncError, getTracesSyncProgress, syncTraces } from '../../../../utils/traces-sync';
 import { unauthorized } from '../../../utils';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +18,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (err) {
     console.error('Traces sync failed', err);
 
-    return NextResponse.json({ detail: 'Traces sync failed.' }, { status: 502 });
+    const status = err instanceof GeoveloSyncError && err.status === 401 ? 401 : 502;
+    return NextResponse.json({ detail: 'Traces sync failed.' }, { status });
   }
 }
 

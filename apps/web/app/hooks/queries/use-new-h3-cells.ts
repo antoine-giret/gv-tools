@@ -1,6 +1,8 @@
 import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchApi } from '../../utils/fetch-api';
+
 import { useTracesSync } from './use-traces-sync';
 
 export function useNewH3Cells({
@@ -29,8 +31,7 @@ export function useNewH3Cells({
         end: end.toISOString(),
       });
 
-      const response = await fetch(`/api/users/${userId}/new_h3_cells?${searchParams}`);
-      if (!response.ok) throw new Error(`New H3 cells responded ${response.status}`);
+      const response = await fetchApi(`/api/users/${userId}/new_h3_cells?${searchParams}`);
 
       const { h3_indexes } = (await response.json()) as { h3_indexes: string[] };
 

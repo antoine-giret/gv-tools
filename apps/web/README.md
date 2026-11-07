@@ -41,3 +41,15 @@ The production app is installable as a PWA. Its manifest is available at
 `/manifest.webmanifest`; the service worker caches versioned Next.js static assets
 and provides an offline fallback page. It does not cache personalized pages or API
 responses. The service worker is disabled during development.
+
+## Session
+
+The server session and the browser's Geovelo credentials expire after 30 days.
+If either is missing or the server rejects the credentials, the app asks the user
+to sign in again. Network and server errors do not sign the user out.
+
+Run the request error handling tests with Node.js 22:
+
+```bash
+node --experimental-strip-types --test tests/fetch-api.test.mjs
+```

@@ -1,7 +1,7 @@
 'use client';
 
 import { TUser } from '@repo/models';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useCookies } from 'next-client-cookies';
 import { ThemeProvider } from 'next-themes';
@@ -9,47 +9,20 @@ import { useEffect, useState } from 'react';
 
 import { UserContext } from './context';
 import { useUser } from './hooks/queries/use-user';
+import { ApiError } from './utils/fetch-api';
 
-const queryClient = new QueryClient();
-
-function LocalStorageProvider({
-  cookiesStoreUserId,
-  cookiesStoreAuthorizationToken,
+function UserProvider({
+  authData,
   children,
   setSignedInUser,
+  signOut,
 }: Readonly<{
+  authData: { userId: number; authorizationToken: string } | null;
   children: React.ReactNode;
-  cookiesStoreAuthorizationToken: string | undefined;
-  cookiesStoreUserId: string | undefined;
   setSignedInUser: (user: TUser | null) => void;
+  signOut: () => void;
 }>) {
-  const [authData] = useState(() => {
-    let userId: number | undefined, authorizationToken: string | undefined;
-
-    if (cookiesStoreUserId) {
-      userId = parseInt(cookiesStoreUserId);
-      authorizationToken = cookiesStoreAuthorizationToken || '';
-    } else if (typeof window !== 'undefined') {
-      try {
-        const localStorageUserId = localStorage.getItem('user_id');
-        const localStorageAuthorizationToken = localStorage.getItem('authorization_token');
-
-        if (localStorageUserId) {
-          userId = parseInt(localStorageUserId);
-          authorizationToken = localStorageAuthorizationToken || '';
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    if (userId && !Number.isNaN(userId) && authorizationToken)
-      return { userId, authorizationToken };
-
-    return null;
-  });
-
-  const { data: userData } = useUser(authData);
+  const { data: userData, isError, refetch } = useUser(authData);
 
   useEffect(() => {
     if (userData && authData) {
@@ -82,7 +55,24 @@ function LocalStorageProvider({
 
       setSignedInUser(null);
     }
-  }, [userData]);
+  }, [userData, authData, setSignedInUser]);
+
+  if (authData && isError && !userData)
+    return (
+      <div className="flex flex-col items-center gap-3 p-6 text-center" role="alert">
+        <p>
+          Impossible de vérifier votre connexion. Vérifiez votre connexion internet et réessayez.
+        </p>
+        <div className="flex gap-3">
+          <button className="underline" onClick={() => void refetch()}>
+            Réessayer
+          </button>
+          <button className="underline" onClick={signOut}>
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    );
 
   return <>{children}</>;
 }
@@ -97,9 +87,28 @@ export function Providers({
   cookiesStoreUserId: string | undefined;
 }>) {
   const [signedInUser, setSignedInUser] = useState<TUser | null | undefined>();
+  const [sessionExpired, setSessionExpired] = useState(false);
   const cookies = useCookies();
+  const [authData, setAuthData] = useState(() => {
+    let userId = cookiesStoreUserId;
+    let authorizationToken = cookiesStoreAuthorizationToken;
 
-  function signOut() {
+    if (!userId && typeof window !== 'undefined') {
+      try {
+        userId = localStorage.getItem('user_id') ?? undefined;
+        authorizationToken = localStorage.getItem('authorization_token') ?? undefined;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    const parsedUserId = Number(userId);
+    return parsedUserId && Number.isInteger(parsedUserId) && authorizationToken
+      ? { userId: parsedUserId, authorizationToken }
+      : null;
+  });
+
+  function clearSession(expired: boolean) {
     cookies.remove('user_id');
     cookies.remove('authorization_token');
 
@@ -110,21 +119,45 @@ export function Providers({
       console.error(err);
     }
 
+    setAuthData(null);
     setSignedInUser(null);
+    setSessionExpired(expired);
+  }
+
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        queryCache: new QueryCache({
+          onError: (error) => {
+            if (error instanceof ApiError && error.status === 401) clearSession(true);
+          },
+        }),
+        defaultOptions: {
+          queries: {
+            retry: (failureCount, error) =>
+              !(error instanceof ApiError && error.status === 401) && failureCount < 3,
+          },
+        },
+      }),
+  );
+
+  function signOut() {
+    clearSession(false);
+    queryClient.clear();
   }
 
   return (
     <ThemeProvider attribute="class">
-      <UserContext.Provider value={{ signedInUser, signOut }}>
+      <UserContext.Provider value={{ signedInUser, sessionExpired, signOut: () => signOut() }}>
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
-          <LocalStorageProvider
-            cookiesStoreAuthorizationToken={cookiesStoreAuthorizationToken}
-            cookiesStoreUserId={cookiesStoreUserId}
+          <UserProvider
+            authData={authData}
             setSignedInUser={setSignedInUser}
+            signOut={() => signOut()}
           >
             {children}
-          </LocalStorageProvider>
+          </UserProvider>
         </QueryClientProvider>
       </UserContext.Provider>
     </ThemeProvider>
