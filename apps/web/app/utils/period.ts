@@ -1,5 +1,15 @@
-import { TPeriod, TPeriodType } from '@repo/models';
+import type { TPeriod, TPeriodType } from '@repo/models';
 import { match } from 'ts-pattern';
+
+export function getPeriodBounds(period: TPeriod) {
+  const start = new Date(period.startDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(period.endDate);
+  end.setHours(0, 0, 0, 0);
+  end.setDate(end.getDate() + 1);
+
+  return { start, end };
+}
 
 export function getInitialPeriod(periodType: Exclude<TPeriodType, 'allTime'>): TPeriod {
   const startDate = new Date();

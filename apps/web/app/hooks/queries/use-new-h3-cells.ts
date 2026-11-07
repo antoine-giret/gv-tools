@@ -2,6 +2,7 @@ import { TPeriod, TUser } from '@repo/models';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchApi } from '../../utils/fetch-api';
+import { getPeriodBounds } from '../../utils/period';
 
 import { useTracesSync } from './use-traces-sync';
 
@@ -16,12 +17,7 @@ export function useNewH3Cells({
   // Refreshed once the sync has stored the latest tiles
   const { data: syncedAt } = useTracesSync(user);
 
-  // Local days of the period, end day included
-  const start = new Date(period.startDate);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(period.endDate);
-  end.setHours(0, 0, 0, 0);
-  end.setDate(end.getDate() + 1);
+  const { start, end } = getPeriodBounds(period);
 
   return useQuery({
     queryKey: ['newH3Cells', userId, start.toISOString(), end.toISOString(), syncedAt?.getTime()],
