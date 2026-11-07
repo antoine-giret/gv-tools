@@ -20,64 +20,31 @@ export default function DashboardLayout({
   return (
     <div className="flex flex-grow flex-col md:flex-row">
       <div className="hidden md:block w-64 shrink-0 border-r-1 border-black/20 dark:border-white/20" />
-      <div className="hidden md:block fixed top-16 left-0 w-64 py-3 pr-[1px]">
-        {navItems.map(({ key, Icon, label, path }) => {
-          const active = pathname === path;
-
-          if (active) {
-            return (
-              <div
-                className="flex w-full px-6 py-3 items-center gap-3 text-emerald-500 dark:text-emerald-300"
-                key={key}
-              >
-                <Icon className="size-4" />
-                <span className="text-md">{label}</span>
-              </div>
-            );
-          }
-
-          return (
-            <Link
-              className="flex w-full px-6 py-3 items-center gap-3 hover:bg-black/10 hover:dark:bg-white/10"
-              href={path}
-              key={key}
-            >
-              <Icon className="size-4" />
-              <span className="text-md">{label}</span>
-            </Link>
-          );
-        })}
-      </div>
       <div className="block md:hidden h-[50px] shrink-0" />
-      <div className="flex md:hidden fixed top-16 left-0 w-full bg-(--background) border-b-1 border-black/20 dark:border-white/20 overflow-x-scroll z-100">
+      <nav
+        aria-label="Navigation du tableau de bord"
+        className="fixed top-16 left-0 z-100 flex w-full overflow-x-auto border-b-1 border-black/20 bg-(--background) dark:border-white/20 md:w-64 md:flex-col md:overflow-visible md:border-b-0 md:bg-transparent md:py-3 md:pr-[1px]"
+      >
         {navItems.map(({ key, Icon, label, path }) => {
           const active = pathname === path;
 
-          if (active) {
-            return (
-              <div
-                className="shrink-0 flex px-6 py-3 items-center gap-3 text-emerald-500 dark:text-emerald-300 border-b-2 border-emerald-500 dark:border-emerald-300"
-                key={key}
-              >
-                <Icon className="size-4" />
-                <span className="text-md">{label}</span>
-              </div>
-            );
-          }
-
           return (
             <Link
-              className="shrink-0 flex px-6 py-3 items-center gap-3 hover:bg-black/10 hover:dark:bg-white/10 border-b-2 border-transparent"
+              aria-current={active ? 'page' : undefined}
+              className={`flex shrink-0 items-center gap-3 border-b-2 px-6 py-3 md:w-full md:border-b-0 ${
+                active
+                  ? 'border-emerald-500 text-emerald-500 dark:border-emerald-300 dark:text-emerald-300'
+                  : 'border-transparent hover:bg-black/10 hover:dark:bg-white/10'
+              }`}
               href={path}
               key={key}
             >
-              <Icon className="size-4" />
+              <Icon aria-hidden="true" className="size-4" />
               <span className="text-md">{label}</span>
             </Link>
           );
         })}
-        <div className="shrink-0 w-[1000px]" />
-      </div>
+      </nav>
       <div className="grow flex flex-col p-6 min-w-0">{children}</div>
     </div>
   );
